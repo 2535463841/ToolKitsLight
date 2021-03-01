@@ -1,6 +1,9 @@
 import os
 import queue
 import re
+import functools
+
+from typing import SupportsComplex, Text
 from oslo_log import log
 
 from PyQt5 import QtWidgets
@@ -10,9 +13,12 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import Qt, QtFatalMsg
 
 from toolkitslight import utils
+import toolkitslight
 
 
 LOG = log.getLogger(__name__)
+
+home_dir = os.path.dirname(os.path.dirname(__file__))
 
 
 class QLineEditWithDrogEvent(QtWidgets.QTextEdit):
@@ -79,7 +85,8 @@ class WidgetWithLayout(QtWidgets.QWidget):
 
     @staticmethod
     def load_qss(file_name):
-        file_path = os.path.join('qss', file_name)
+        file_path = os.path.join(home_dir,
+                                 'qss', file_name)
         if not os.path.exists(file_path):
             LOG.error('qss file not found: %s', file_path)
             return ''
@@ -124,9 +131,9 @@ class QrCodeWidget(WidgetWithLayout):
         self.add_widget(QtWidgets.QLabel('二维码生成器'))
 
         self.texteditor_content = QtWidgets.QTextEdit('请输入需要生成的内容')
-        # self.texteditor_content.setFixedHeight(100)
+        self.texteditor_content.setFixedHeight(100)
         self.label_qrcode = QtWidgets.QLabel('显示二维码')
-        self.label_qrcode.setFixedHeight(700)
+        self.label_qrcode.setFixedHeight(600)
 
         self.add_widget(self.texteditor_content)
         self.add_widget(self.label_qrcode)
@@ -149,6 +156,55 @@ class QrCodeWidget(WidgetWithLayout):
             self.label_qrcode.setPixmap(QtGui.QPixmap(save_file))
         else:
             LOG.error('create qrcode file failed')
+
+
+class WidgetBaseConverter(WidgetWithLayout):
+    def __init__(self):
+        super().__init__(QtWidgets.QVBoxLayout())
+        self.add_widget(QtWidgets.QLabel('进制转换器'))
+        self.data = 0
+        for i in [2, 8, 10, 16]:
+            setattr(self, 'textedit_%s' % i, QtWidgets.QTextEdit())
+            textedit = getattr(self, 'textedit_%s' % i)
+            textedit.setFixedHeight(40)
+            textedit.setStyleSheet(self.load_qss('app.qss') )
+            # textedit.setProperty('level', 'error')
+            self.add_widget(QtWidgets.QLabel('%s进制' % i))
+            self.add_widget(textedit) 
+            textedit.textChanged.connect(
+                functools.partial(self.convert, textedit, i)
+            )
+        self._layout.addStretch()
+
+    def convert(self, texteditor: QtWidgets.QTextEdit, num):
+        try:
+            text = texteditor.toPlainText().strip()
+            if not text:
+                text = '0'
+            texteditor.setProperty('level', 'default')
+            texteditor.setStyleSheet(self.load_qss('app.qss') )
+            if int(text, num) == self.data:
+                return
+            self.data = int(text, num)
+            for i in [2, 8, 10, 16]:
+                editor = getattr(self, 'textedit_%s' % i)
+                if editor == texteditor:
+                    continue
+                else:
+                    editor.setText(
+                        utils.convert_base(self.data, num, target_base=i)
+                    )
+            print('xxxxxxxxxx')
+            
+        except ValueError as e:
+            self.data = 0
+            LOG.error(e)
+            # texteditor.setStyleSheet('QTextEdit[class="error"] { color: red }')
+            texteditor.setProperty('level', 'error')
+            texteditor.setStyleSheet(self.load_qss('app.qss') )
+            # texteditor.
+            texteditor.update()
+
 
 
 class WidgetFTPD(WidgetWithLayout):

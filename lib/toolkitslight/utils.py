@@ -38,3 +38,35 @@ def create_qrcode(content, output=None):
     #     error_correction=qrcode.constants.ERROR_CORRECT_H,
     #     box_size=8,
     #     border=4)
+
+
+def convert_base(src_number,  src_base: int, target_base: int=10):
+    """
+    >>> convert_base('10', 10, target_base=2)
+    '1010'
+    >>> convert_base('10', 10, target_base=8)
+    '12'
+    >>> convert_base('10', 10, target_base=10)
+    '10'
+    >>> convert_base('10', 10, target_base=16)
+    'a'
+    >>> convert_base(11, 10, target_base=16)
+    'b'
+    """
+    supported_base = {
+        2: bin,
+        8: oct,
+        10: str,
+        16: hex
+    }
+    if target_base not in supported_base:
+        raise ValueError('supported base: %s' % supported_base.keys())
+    if src_base == target_base:
+        return src_number
+    base_10 = src_number if isinstance(src_number, int) \
+        else int(src_number, src_base)
+    target_num = supported_base[target_base](base_10)
+    if target_num[:2] in ['0b', '0x', '0o']:
+        return target_num[2:]
+    else:
+        return target_num

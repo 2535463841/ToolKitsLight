@@ -1,0 +1,62 @@
+QLineEdit { background: yellow }
+QCheckBox { color: red }
+
+QPushButton[class="light"] {
+    background: #F8F9FA;
+    color: black;
+    border: 0px solid #F8F9FA;
+    border-radius: 6px;
+    padding:4px 4px;
+}
+
+QPushButton:pressed[class="light"] {
+    background: #E2E6EA;
+    color: black;
+    border: 0px solid #E2E6EA;
+    border-radius: 6px;
+    padding: 4px 4px;
+}
+
+/* 0, 123, 255
+0, 105, 217
+ */
+
+QPushButton[class=default] {
+    background: #007BFF;
+    color: white;
+    border: 0px solid #007BFF;
+    border-radius: 6px;
+    padding:4px 4px;
+}
+QPushButton::pressed[class=default] {
+    background: #0069D9;
+    color: white;
+    border: 0px solid #0069D9;
+    border-radius: 6px;
+    padding:4px 4px;
+}
+
+
+QPushButton[class="info"] {
+    background: green;
+    color: white
+}
+
+QPushButton[class=warning] {
+    background: yellow;
+    color: white
+}
+
+QPushButton[class=error] {
+    background: red;
+    color: white
+}
+
+.QTextEdit[level="error"] {
+    color: red
+}
+
+
+.QTextEdit[level="default"] {
+    color: green
+}

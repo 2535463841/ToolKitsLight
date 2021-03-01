@@ -66,6 +66,7 @@ class MainWindow(BaseGridWindow):
 
         self.button_md5sum = QtWidgets.QPushButton('计算MD5值')
         self.button_qrcode = QtWidgets.QPushButton('二维码生成')
+        self.button_base_convert = QtWidgets.QPushButton('进制转换器')
 
         self.button_ftpd = QtWidgets.QPushButton('文件服务器')
         self.button_sshd = QtWidgets.QPushButton('sshd服务')
@@ -76,16 +77,17 @@ class MainWindow(BaseGridWindow):
         self.widget_ftpd = widgets.WidgetFTPD()
         self.widget_sshd = widgets.WidgetSSHD()
         self.widget_rcp = widgets.WidgetRCP()
-
+        self.widget_base_convert = widgets.WidgetBaseConverter()
+        
         self.register_bt_controller(self.button_md5sum, self.widget_md5sum)
         self.register_bt_controller(self.button_qrcode, self.widget_qrcode)
-        
+        self.register_bt_controller(self.button_base_convert,
+                                    self.widget_base_convert)
         self.register_bt_controller(self.button_ftpd, self.widget_ftpd)
         self.register_bt_controller(self.button_sshd, self.widget_sshd)
         self.register_bt_controller(self.button_rcp, self.widget_rcp)
 
-        for _, widget in self.button_coutroller[1:]:
-            widget.hide()
+        # self.setStyleSheet(self.load_qss('app.qss'))
         # self.bt_new_project = QtWidgets.QPushButton("+新建")
         # self.projects_widget = WidgetWithLayout(QtWidgets.QGridLayout())
 
@@ -101,18 +103,39 @@ class MainWindow(BaseGridWindow):
         self.left_widget_layout.addStretch()
 
         # init widgets, show first and hide the others
+        self.show_widget(3)
         
     def register_bt_controller(self, button: QtWidgets.QPushButton,
                                widget: QtWidgets.QWidget):
         def on_click_event(event):
+            tmp_widget = None
             for bt, widget in self.button_coutroller:
-                if button == bt:
-                    LOG.info('click:%s show:%s', button, widget)
-                    widget.show()
-                else:
+                if button != bt:
                     widget.hide()
+                    bt.setProperty('class', 'light')
+                    bt.setStyleSheet(self.load_qss('app.qss'))
+                else:
+                    tmp_widget = widget
+                    bt.setProperty('class', 'default')
+                    bt.setStyleSheet(self.load_qss('app.qss'))
+                    
+            LOG.info('click:%s show: %s', button, widget)
+            # button.remove
+            tmp_widget.show()
         button.clicked.connect(on_click_event)
+
+        button.setProperty('class', 'light')
+        button.setStyleSheet(self.load_qss('app.qss'))
         self.left_widget_layout.addWidget(button)
         self.right_widget_layout.addWidget(widget)
         self.button_coutroller.append((button, widget))
 
+    def show_widget(self, index):
+        for _, widget in self.button_coutroller[:index-1]:
+            widget.hide()
+        for _, widget in self.button_coutroller[index:]:
+            widget.hide()
+        self.button_coutroller[index-1][1].show()
+        bt = self.button_coutroller[index-1][0]
+        bt.setProperty('class', 'default')
+        bt.setStyleSheet(self.load_qss('app.qss'))
