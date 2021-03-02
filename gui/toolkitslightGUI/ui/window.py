@@ -64,17 +64,17 @@ class MainWindow(BaseGridWindow):
         self.setGeometry(0, 0, width, height)
         self.button_coutroller = []
 
-        self.button_md5sum = QtWidgets.QPushButton('计算MD5值')
-        self.button_qrcode = QtWidgets.QPushButton('二维码生成')
+        self.button_md5sum = QtWidgets.QPushButton('MD5计算器')
+        self.button_qrcode = QtWidgets.QPushButton('二维码生成器')
         self.button_base_convert = QtWidgets.QPushButton('进制转换器')
 
         self.button_ftpd = QtWidgets.QPushButton('文件服务器')
-        self.button_sshd = QtWidgets.QPushButton('sshd服务')
+        # self.button_sshd = QtWidgets.QPushButton('sshd服务')
         self.button_rcp = QtWidgets.QPushButton('远程文件拷贝')
 
         self.widget_md5sum = widgets.Md5sumWidget()
         self.widget_qrcode = widgets.QrCodeWidget()
-        self.widget_ftpd = widgets.WidgetFTPD()
+        # self.widget_ftpd = widgets.WidgetFTPD()
         self.widget_sshd = widgets.WidgetSSHD()
         self.widget_rcp = widgets.WidgetRCP()
         self.widget_base_convert = widgets.WidgetBaseConverter()
@@ -84,7 +84,7 @@ class MainWindow(BaseGridWindow):
         self.register_bt_controller(self.button_base_convert,
                                     self.widget_base_convert)
         self.register_bt_controller(self.button_ftpd, self.widget_ftpd)
-        self.register_bt_controller(self.button_sshd, self.widget_sshd)
+        # self.register_bt_controller(self.button_sshd, self.widget_sshd)
         self.register_bt_controller(self.button_rcp, self.widget_rcp)
 
         # self.setStyleSheet(self.load_qss('app.qss'))
