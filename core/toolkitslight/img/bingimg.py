@@ -1,96 +1,101 @@
-import os
-import logging
-from re import I
-from bs4.element import ProcessingInstruction
-import urllib3
+import sys
 import bs4
+import logging
 
+from toolkitslight.web import downloader
 
 LOG = logging.getLogger(__name__)
 
 
 SCHEME = 'http'
 HOST = 'www.bingimg.cn'
+FILE_NAME_MAX_SIZE = 50
 
 
 class BingImagDownloader:
     RESOLUTION_1080 = '1920x1080'
     RESOLUTION_UHD = 'uhd'
 
-    def __init__(self, host=None, scheme=None) -> None:
+    def __init__(self, host=None, scheme=None, download_dir=None,
+                 headers=None, timeout=60):
         self.scheme =  scheme or SCHEME
         self.host = host or HOST
-        self.http = urllib3.PoolManager()
+        self.headers = headers or self.default_headers
+
+    @property
+    def default_headers(self):
+        return {
+        'Accept': 'text/html,application/xhtml+xml',
+        'Accept-Encoding': 'gzip, deflate',
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+        'Cache-Control': 'max-age=0',
+        'Connection': 'keep-alive',
+        'Host': self.host,
+        'Referer': '{0}://{1}/'.format(self.scheme, self.host),
+        'Upgrade-Insecure-Requests': '1',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+    }
+
+    def download(self, page, download_dir=None, resolution=None,
+                 threads=None, process=False, timeout=None):
+        """download images found in page
+
+        page : int
+            page number
+        resolution : string, optional
+            the resolution of image to download, by default None
+        threads : int, optional
+            download threads, if None, save, by default None
+        process : bool, optional
+            show process, by default False
+        """
+        download_driver = downloader.HttpDownloader(download_dir=download_dir,
+                                                    headers=self.headers,
+                                                    timeout=timeout,
+                                                    threads=threads,
+                                                    process=process
+        )
+        # request page and find all img links
+        resp = download_driver.http.request('GET', self.get_page_url(page))
+        if resp.status != 200:
+            raise Exception('http reqeust failed, %s' % resp.data)
+        html = bs4.BeautifulSoup(resp.data, features="html.parser")
+        img_links = []
+        for link in html.find_all(name='a'):
+            if not link.get('href').endswith('.jpg'):
+                continue
+            print(link)
+            if resolution and resolution not in link.get('href'):
+                continue
+            img_links.append(link.get('href'))
+        LOG.info('found %s links in page %s', len(img_links), page)
+        download_driver.download(img_links)
 
     def get_page_url(self, page):
         return '{}://{}/list{}'.format(self.scheme, self.host, page)
 
-    def find_img_link_on_page(self, page, resolution=None):
-        url = self.get_page_url(page)
-        resp = self.http.request('GET', url)
-        html = bs4.BeautifulSoup(resp.data, features="html.parser")
-        a_list = html.find_all(name='a')
-        links = [
-            a.get('href') for a in a_list if a.get('href').endswith('jpg')
-        ]
-        if resolution:
-            return [link for link in links if resolution in link]
-        else:
-            return links
 
-    def download(self, page, resolution=None, download_dir=None):
-        """
-        download_format: 1920x1080, uhd, None
-        """
-        img_links = self.find_img_link_on_page(page, resolution=resolution)
-        # print(img_links)
-        resp_list = []
-        for link in img_links:
-            print('==== %s ====' % link)
-            resp = self.download_and_save_img(link)
-            resp_list.append((link, './', resp))
+def main():
+    debug = False
+    stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(logging.DEBUG)
+    stream_handler.setFormatter(
+        logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))
 
-        def save_data(args):
-            _link = args[0]
-            _save_dir = args[1]
-            _resp = args[2]
-            if _resp.status != 200:
-                return
-            file_name = os.path.basename(_link)
-            save_path = os.path.join(_save_dir or '.', file_name)
-            import time
-            with open(save_path, 'wb') as f:
-                for data in _resp.stream(1024000):
-                    print(time.time(), 'receive', len(data))
-                    f.write(data)
-                    f.flush()
-            return True
+    log = logging.getLogger('toolkitslight.web')
+    log.addHandler(stream_handler)
+    log.setLevel(logging.DEBUG if debug else logging.INFO)
+    LOG.addHandler(stream_handler)
+    LOG.setLevel(logging.DEBUG if debug else logging.INFO)
+    LOG.info('dowloading')
 
-        from concurrent import futures
-
-        with futures.ThreadPoolExecutor(10) as executor:
-            results = executor.map(save_data, resp_list)
-        
-        # for result in results:
-        #     print(result)
-
-    def download_and_save_img(self, link, download_dir=None):
-        file_name = os.path.basename(link)
-        save_path = os.path.join(download_dir or '.', file_name)
-        print('    download %s' % link)
-        resp = self.http.request('GET', link, preload_content=False)
-        return resp
-        print('response status is %s', resp.status)
-        if resp.status != 200:
-            return
-        print('        saving %s' % link)
-        with open(save_path, 'wb') as f:
-            for data in resp.stream(1024):
-                f.write(data)
+    downloader = BingImagDownloader(timeout=600)
+    downloader.download(sys.argv[1],
+                        resolution=BingImagDownloader.RESOLUTION_UHD,
+                        threads=None,
+                        process=True)
+    LOG.info('finished')
 
 
 if __name__ == '__main__':
-    downloader = BingImagDownloader()
-    print('dowloading')
-    downloader.download(1, resolution=BingImagDownloader.RESOLUTION_UHD)
-    print('finished')
+    main()
