@@ -16,8 +16,7 @@ class BingImagDownloader:
     RESOLUTION_1080 = '1920x1080'
     RESOLUTION_UHD = 'uhd'
 
-    def __init__(self, host=None, scheme=None, download_dir=None,
-                 headers=None, timeout=60):
+    def __init__(self, host=None, scheme=None, headers=None,):
         self.scheme =  scheme or SCHEME
         self.host = host or HOST
         self.headers = headers or self.default_headers
@@ -37,7 +36,7 @@ class BingImagDownloader:
     }
 
     def download(self, page, download_dir=None, resolution=None,
-                 threads=None, process=False, timeout=None):
+                 workers=None, process=False, timeout=None):
         """download images found in page
 
         page : int
@@ -52,7 +51,7 @@ class BingImagDownloader:
         download_driver = downloader.HttpDownloader(download_dir=download_dir,
                                                     headers=self.headers,
                                                     timeout=timeout,
-                                                    threads=threads,
+                                                    workers=workers,
                                                     process=process
         )
         # request page and find all img links
@@ -64,7 +63,6 @@ class BingImagDownloader:
         for link in html.find_all(name='a'):
             if not link.get('href').endswith('.jpg'):
                 continue
-            print(link)
             if resolution and resolution not in link.get('href'):
                 continue
             img_links.append(link.get('href'))
@@ -73,29 +71,3 @@ class BingImagDownloader:
 
     def get_page_url(self, page):
         return '{}://{}/list{}'.format(self.scheme, self.host, page)
-
-
-def main():
-    debug = False
-    stream_handler = logging.StreamHandler()
-    stream_handler.setLevel(logging.DEBUG)
-    stream_handler.setFormatter(
-        logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))
-
-    log = logging.getLogger('toolkitslight.web')
-    log.addHandler(stream_handler)
-    log.setLevel(logging.DEBUG if debug else logging.INFO)
-    LOG.addHandler(stream_handler)
-    LOG.setLevel(logging.DEBUG if debug else logging.INFO)
-    LOG.info('dowloading')
-
-    downloader = BingImagDownloader(timeout=600)
-    downloader.download(sys.argv[1],
-                        resolution=BingImagDownloader.RESOLUTION_UHD,
-                        threads=None,
-                        process=True)
-    LOG.info('finished')
-
-
-if __name__ == '__main__':
-    main()

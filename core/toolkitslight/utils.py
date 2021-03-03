@@ -1,6 +1,7 @@
 import hashlib
 import qrcode
-import datetime
+import time
+from datetime import datetime
 
 
 def md5sum_file(file_path, read_bytes=1024):
@@ -79,5 +80,16 @@ def format_timestamp(timestamp: float, date_format='%Y-%m-%d %H:%M:%S'):
     """
     if timestamp is not None:
         return datetime.fromtimestamp(timestamp).strftime(date_format)
+    else:
+        return None
+
+
+def format_datetime(datetime_str: str, date_format='%Y-%m-%d %H:%M:%S'):
+    """Parse timestamp to string with DATE_FORMAT
+    >>> format_datetime('1970-01-01 08:00:00')
+    0.0
+    """
+    if datetime_str is not None:
+        return time.mktime(time.strptime(datetime_str, date_format))
     else:
         return None
