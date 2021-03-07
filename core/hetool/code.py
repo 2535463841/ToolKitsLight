@@ -1,16 +1,21 @@
 import hashlib
 import qrcode
-import time
-from datetime import datetime
+import io
+import random
+
+LOWER = 'abcdefghijklmnopqrstuvwxyz'
+UPPER = 'abcdefghijklmnopqrstuvwxyz'.upper()
+NUMBER = '0123456789'
+SPECIAL = '!@#$%^&*,.;:'
 
 
-def md5sum_file(file_path, read_bytes=1024):
+def md5sum_file(file_path, read_bytes=None):
     """Calculate the md5 and sha1 values of the file
     Return: md3sum, sha1
     """
+    read_bytes or io.DEFAULT_BUFFER_SIZE
     sha1 = hashlib.sha1()
     md5sum = hashlib.md5()
-
     def read_from_fo(fo):
         data = fo.read(read_bytes)
         while data:
@@ -22,23 +27,6 @@ def md5sum_file(file_path, read_bytes=1024):
             md5sum.update(data)
             sha1.update(data)
     return (md5sum.hexdigest(), sha1.hexdigest())
-
-
-def create_qrcode(content, output=None):
-    """create qrcode
-    >>> test_qrcode = create_qrcode('http://www.baidu.com')
-    >>> test_qrcode is None
-    False
-    """
-    img = qrcode.make(content)
-    if output:
-        img.save(output)
-    return img
-    # qr = qrcode.QRCode(
-    #     version=5,
-    #     error_correction=qrcode.constants.ERROR_CORRECT_H,
-    #     box_size=8,
-    #     border=4)
 
 
 def convert_base(src_number,  src_base: int, target_base: int=10):
@@ -73,23 +61,31 @@ def convert_base(src_number,  src_base: int, target_base: int=10):
         return target_num
 
 
-def format_timestamp(timestamp: float, date_format='%Y-%m-%d %H:%M:%S'):
-    """Parse timestamp to string with DATE_FORMAT
-    >>> format_timestamp(0)
-    '1970-01-01 08:00:00'
+def create_qrcode(content, output=None):
+    """create qrcode
+    >>> test_qrcode = create_qrcode('http://www.baidu.com')
+    >>> test_qrcode is None
+    False
     """
-    if timestamp is not None:
-        return datetime.fromtimestamp(timestamp).strftime(date_format)
-    else:
-        return None
+    img = qrcode.make(content)
+    if output:
+        img.save(output)
+    return img
+    # qr = qrcode.QRCode(
+    #     version=5,
+    #     error_correction=qrcode.constants.ERROR_CORRECT_H,
+    #     box_size=8,
+    #     border=4)
 
 
-def format_datetime(datetime_str: str, date_format='%Y-%m-%d %H:%M:%S'):
-    """Parse timestamp to string with DATE_FORMAT
-    >>> format_datetime('1970-01-01 08:00:00')
-    0.0
-    """
-    if datetime_str is not None:
-        return time.mktime(time.strptime(datetime_str, date_format))
-    else:
-        return None
+def random_password(lower=4, upper=4, number=4, special=4):
+    kwargs = locals()
+    char_map = {'lower': LOWER,
+                'upper': UPPER,
+                'number': NUMBER,
+                'special': SPECIAL}
+    password = []
+    for char_type, char_num in kwargs.items():
+        password += random.sample(char_map[char_type], char_num)
+    random.shuffle(password)
+    return ''.join(password)

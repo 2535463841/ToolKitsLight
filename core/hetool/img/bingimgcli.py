@@ -1,7 +1,7 @@
 import logging
 import argparse
 
-from toolkitslight.img import bingimg
+from hetool.img import bingimg
 
 LOG = logging.getLogger(__name__)
 

@@ -25,7 +25,7 @@ DownloadItem = namedtuple('DownloadItem', 'url name resp')
 class HttpDownloader:
 
     def __init__(self, download_dir=None, headers=None, timeout=60,
-                 workers=None, process=False):
+                 workers=None, process=False, callback=None):
         self.headers = headers or DEFAULT_HEADERS
         self.workers = workers or DEFAULT_WORKERS
         self.http = urllib3.PoolManager(num_pools=self.workers,
@@ -34,6 +34,7 @@ class HttpDownloader:
         self.download_dir = download_dir or os.path.join('.', 'tmp')
         self.process = process
         self.filename_max = 0
+        self.callback = callback
 
     def download(self, url_list):
         """download all files on the list of url
@@ -77,10 +78,12 @@ class HttpDownloader:
             pbar.close()
         return file_name
 
-    def _save_resp_data(self, resp_file, callabck=None):
-        save_path = os.path.join(self.download_dir, resp_file.name)
+    def _save_resp_data(self, download_item, callabck=None):
+        save_path = os.path.join(self.download_dir, download_item.name)
         with open(save_path, 'wb') as f:
-            for data in resp_file.resp.stream(io.DEFAULT_BUFFER_SIZE):
+            for data in download_item.resp.stream(io.DEFAULT_BUFFER_SIZE):
                 f.write(data)
-                if callabck: 
+                if callabck:
                     callabck(data)
+                if self.callback:
+                    self.callback(download_item, data)

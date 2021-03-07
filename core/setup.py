@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 
-setup(name='toolkitslight',
+setup(name='hetool',
       version='0.1',
       description='python toolkits',
       author='zbw',

@@ -3,7 +3,6 @@ import queue
 import re
 import functools
 
-from typing import SupportsComplex, Text
 from oslo_log import log
 
 from PyQt5 import QtWidgets
@@ -12,8 +11,9 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt, QtFatalMsg
 
-from toolkitslight import utils
-import toolkitslight
+from hetool import code
+from hetool import date
+from hetool import location
 
 
 LOG = log.getLogger(__name__)
@@ -59,7 +59,7 @@ class QLineEditWithDrogEvent(QtWidgets.QTextEdit):
             LOG.error('error, not match')
             return ''
         file_path = matched.group(1)
-        md5sum_value, sha1_value = utils.md5sum_file(
+        md5sum_value, sha1_value = code.md5sum_file(
             file_path, read_bytes=102400)
         context = '文件路径: %s\n' \
                   'MD5  值: %s\n' \
@@ -69,6 +69,7 @@ class QLineEditWithDrogEvent(QtWidgets.QTextEdit):
 
 
 class WidgetWithLayout(QtWidgets.QWidget):
+    NAME = ''
 
     def __init__(self, layout, qss_file=None):
         super(WidgetWithLayout, self).__init__()
@@ -76,8 +77,18 @@ class WidgetWithLayout(QtWidgets.QWidget):
         self.qss_file = qss_file
         self.setLayout(self._layout)
 
+        if self.NAME:
+            self.add_widget(QtWidgets.QLabel(self.NAME))
         if self.qss_file:
             self.setStyleSheet(self.load_qss())
+
+    def showEvent(self, a0: QtGui.QShowEvent) -> None:
+        super().showEvent(a0)
+        if self.qss_file:
+            self.setStyleSheet(self.load_qss())
+
+    def addStretch(self):
+        self._layout.addStretch()
 
     def add_widget(self, *args, **kwargs):
         self._layout.addWidget(*args, **kwargs)
@@ -116,12 +127,24 @@ class WidgetWithLayout(QtWidgets.QWidget):
         return QtGui.QIcon(file_path)
 
 
+class WidgetForm(WidgetWithLayout):
+    
+    def __init__(self):
+        super().__init__(QtWidgets.QFormLayout())
+
+    def add_row(self, label, widget, end=None, **kwargs):
+        self._layout.addRow(label, widget, **kwargs)
+        # l = QtWidgets.QFormLayout()
+        # l.addWidget()
+        return self
+
+
 class Md5sumWidget(WidgetWithLayout):
+    NAME = 'MD5值计算'
 
     def __init__(self):
         super().__init__(QtWidgets.QGridLayout())
-        self.add_widget(QtWidgets.QLabel('计算MD5值'))
-        
+        self.addHSpacer()
         self.label_tooltip = QtWidgets.QLabel('请将文件拖动到如下区域')
         self.button_clean = QtWidgets.QPushButton('清空')
         self.texteditor_md4sum = QLineEditWithDrogEvent()
@@ -141,10 +164,7 @@ class QrCodeWidget(WidgetWithLayout):
 
     def __init__(self):
         super().__init__(QtWidgets.QGridLayout())
-        self.add_widget(QtWidgets.QLabel(self.NAME))
-        self._layout.addItem(QtWidgets.QSpacerItem(
-            20, 20, QtWidgets.QSizePolicy.Expanding,
-            QtWidgets.QSizePolicy.Minimum))
+        self.addHSpacer()
         self.texteditor_content = QtWidgets.QTextEdit('请输入需要生成的内容')
         self.texteditor_content.setFixedHeight(100)
         self.label_qrcode = QtWidgets.QLabel('显示二维码')
@@ -166,7 +186,7 @@ class QrCodeWidget(WidgetWithLayout):
             os.makedirs(save_dir)
         elif os.path.exists(save_file):
             os.remove(save_file)
-        utils.create_qrcode(content, output=save_file)
+        code.create_qrcode(content, output=save_file)
         if os.path.exists(save_file):
             self.label_qrcode.setPixmap(QtGui.QPixmap(save_file))
         else:
@@ -178,10 +198,8 @@ class WidgetBaseConverter(WidgetWithLayout):
 
     def __init__(self):
         super().__init__(QtWidgets.QVBoxLayout())
-        self.add_widget(QtWidgets.QLabel(self.NAME))
-        self._layout.addItem(QtWidgets.QSpacerItem(
-            20, 20, QtWidgets.QSizePolicy.Expanding,
-            QtWidgets.QSizePolicy.Minimum))
+        self.addHSpacer()
+
         self.data = 0
         for i in [2, 8, 10, 16]:
             setattr(self, 'textedit_%s' % i, QtWidgets.QTextEdit())
@@ -212,7 +230,7 @@ class WidgetBaseConverter(WidgetWithLayout):
                     continue
                 else:
                     editor.setText(
-                        utils.convert_base(self.data, num, target_base=i)
+                        code.convert_base(self.data, num, target_base=i)
                     )
         except ValueError as e:
             self.data = 0
@@ -228,9 +246,18 @@ class WidgetDateFormater(WidgetWithLayout):
 
     def __init__(self):
         super().__init__(QtWidgets.QVBoxLayout())
-        self.add_widget(QtWidgets.QLabel(self.NAME))
         self.addHSpacer()
+        self.country = location.get_country()
+        self.timezone = location.get_country_timezones()[0]
 
+        self.comboBox = QtWidgets.QComboBox()
+        for country in location.get_country_timezones():
+            self.comboBox.addItem(country)
+
+        self.add_widget(QtWidgets.QLabel('国家: %s' % self.country))
+        self.add_widget(QtWidgets.QLabel('时区:'))
+        self.add_widget(self.comboBox)
+        self.addHSpacer()
         self.add_widget(QtWidgets.QLabel('时间戳'))
         self.lineedit_timestamp = QtWidgets.QLineEdit()
         # self.lineedit_timestamp.
@@ -277,9 +304,13 @@ class WidgetDateFormater(WidgetWithLayout):
             return
         try:
             timestamp = float(timestamp)
-            date_str = utils.format_timestamp(timestamp)
+            date_str = date.parse_ts2str(
+                timestamp, date_format=date.FORMAT_YYYY_MM_DD_HHMMSS)
             if self.lineedit_format.text() != date_str:
-                self.lineedit_format.setText(utils.format_timestamp(timestamp))
+                self.lineedit_format.setText(
+                    date.parse_ts2str(
+                        timestamp, date_format=date.FORMAT_YYYY_MM_DD_HHMMSS)
+                )
         except Exception as e:
             LOG.exception(e)
 
@@ -289,10 +320,67 @@ class WidgetDateFormater(WidgetWithLayout):
             return
         try:
             self.lineedit_timestamp.setText(
-                str(utils.format_datetime(date_str))
+                str(date.parse_str2ts(date_str, date.FORMAT_YYYY_MM_DD_HHMMSS))
             )
         except Exception as e:
             LOG.exception(e)
+
+
+class WidgetRandomPassword(WidgetWithLayout):
+    NAME = '随机密码生成器'
+
+    def __init__(self):
+        super().__init__(QtWidgets.QVBoxLayout())
+        self.lineedit_lower = QtWidgets.QLineEdit('4')
+        self.lineedit_upper = QtWidgets.QLineEdit('4')
+        self.lineedit_number = QtWidgets.QLineEdit('4')
+        self.lineedit_special = QtWidgets.QLineEdit('4')
+        self.button_create = QtWidgets.QPushButton('生成')
+        self.textedit_password = QtWidgets.QTextEdit()
+        # self.textedit_password.setFixedHeight(80)
+
+        # TODO 
+        # how to use QIntValidator
+        self.lower_validor = QtGui.QIntValidator()
+        self.lower_validor.setRange(0, 24)
+        self.lineedit_lower.setValidator(self.lower_validor)
+        self.lineedit_upper.setValidator(QtGui.QIntValidator(0, 24))
+        self.lineedit_number.setValidator(QtGui.QIntValidator(0, 24))
+        self.lineedit_special.setValidator(QtGui.QIntValidator(0, 10))
+        self.button_create.setProperty('class', 'default')
+        self.button_create.setStyleSheet(self.load_qss('app.qss'))
+        self.textedit_password.setFocusPolicy(Qt.NoFocus)
+        self.form = WidgetForm()
+        self.form.add_row('小写字符个数', self.lineedit_lower)
+        self.form.add_row('大写字符个数', self.lineedit_upper)
+        self.form.add_row('数字字符个数', self.lineedit_number)
+        self.form.add_row('特殊字符个数', self.lineedit_special)
+
+        self.add_widget(self.form).add_widget(self.button_create)
+        self.add_widget(
+            QtWidgets.QLabel('结果')).add_widget(self.textedit_password)
+        # self.addStretch()
+
+        self.button_create.clicked.connect(self.create_password)
+        
+    def create_password(self):
+        print(self.lower_validor.validate('01', 0))
+        print(self.lower_validor.validate('23', 0))
+        print(self.lower_validor.validate('24', 0))
+        print(self.lower_validor.validate('25', 0))
+
+        lower = int(self.lineedit_lower.text())
+        
+        upper = int(self.lineedit_upper.text())
+        number = int(self.lineedit_number.text())
+        special = int(self.lineedit_special.text())
+        
+        # self.lineedit_lower.
+        password = code.random_password(lower=lower,
+                             upper=upper,
+                             number=number,
+                             special=special)
+        self.textedit_password.append(password)
 
 
 class WidgetFTPD(WidgetWithLayout):

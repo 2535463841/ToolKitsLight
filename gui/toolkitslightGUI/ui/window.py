@@ -68,6 +68,7 @@ class MainWindow(BaseGridWindow):
         self.button_qrcode = QtWidgets.QPushButton('二维码生成器')
         self.button_base_convert = QtWidgets.QPushButton('进制转换器')
         self.button_dateformater = QtWidgets.QPushButton('时间格式化')
+        self.button_password = QtWidgets.QPushButton('密码生成器')
 
         self.button_ftpd = QtWidgets.QPushButton('文件服务器')
         # self.button_sshd = QtWidgets.QPushButton('sshd服务')
@@ -77,20 +78,22 @@ class MainWindow(BaseGridWindow):
         self.widget_qrcode = widgets.QrCodeWidget()
         self.widget_dateformter = widgets.WidgetDateFormater()
         self.widget_ftpd = widgets.WidgetFTPD()
+        
+        self.widget_password = widgets.WidgetRandomPassword()
+        
         # self.widget_sshd = widgets.WidgetSSHD()
         self.widget_rcp = widgets.WidgetRCP()
         self.widget_base_convert = widgets.WidgetBaseConverter()
-        
+
         self.register_bt_controller(self.button_md5sum, self.widget_md5sum)
         self.register_bt_controller(self.button_qrcode, self.widget_qrcode)
-        self.register_bt_controller(self.button_base_convert,
-                                    self.widget_base_convert)
         self.register_bt_controller(self.button_base_convert,
                                     self.widget_base_convert)
 
         self.register_bt_controller(self.button_dateformater,
                                     self.widget_dateformter)
-
+        self.register_bt_controller(self.button_password,
+                                    self.widget_password)
         self.register_bt_controller(self.button_ftpd, self.widget_ftpd)
         # self.register_bt_controller(self.button_sshd, self.widget_sshd)
         self.register_bt_controller(self.button_rcp, self.widget_rcp)
@@ -111,8 +114,8 @@ class MainWindow(BaseGridWindow):
         self.left_widget_layout.addStretch()
 
         # init widgets, show first and hide the others
-        self.show_widget(3)
-        
+        self.show_widget(5)
+
     def register_bt_controller(self, button: QtWidgets.QPushButton,
                                widget: QtWidgets.QWidget):
         def on_click_event(event):
@@ -147,3 +150,4 @@ class MainWindow(BaseGridWindow):
         bt = self.button_coutroller[index-1][0]
         bt.setProperty('class', 'default')
         bt.setStyleSheet(self.load_qss('app.qss'))
+        print(bt)
