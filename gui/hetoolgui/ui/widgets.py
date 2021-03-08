@@ -14,11 +14,14 @@ from PyQt5.QtCore import Qt, QtFatalMsg
 from hetool import code
 from hetool import date
 from hetool import location
+from hetool import system
 
 
 LOG = log.getLogger(__name__)
 
 home_dir = os.path.dirname(os.path.dirname(__file__))
+
+ONE_G = 1014 * 1024 * 1024
 
 
 class QLineEditWithDrogEvent(QtWidgets.QTextEdit):
@@ -90,8 +93,10 @@ class WidgetWithLayout(QtWidgets.QWidget):
     def addStretch(self):
         self._layout.addStretch()
 
-    def add_widget(self, *args, **kwargs):
+    def add_widget(self, *args, add_hspacer=False, **kwargs):
         self._layout.addWidget(*args, **kwargs)
+        if add_hspacer:
+            self.addHSpacer()
         return self
 
     def addHSpacer(self):
@@ -105,6 +110,9 @@ class WidgetWithLayout(QtWidgets.QWidget):
         self._layout.addItem(QtWidgets.QSpacerItem(
             20, 20, QtWidgets.QSizePolicy.Minimum,
             QtWidgets.QSizePolicy.Expanding))
+    
+    def add_label(self, label):
+        return self.add_widget(QtWidgets.QLabel(label))
 
     @staticmethod
     def load_qss(file_name):
@@ -134,8 +142,6 @@ class WidgetForm(WidgetWithLayout):
 
     def add_row(self, label, widget, end=None, **kwargs):
         self._layout.addRow(label, widget, **kwargs)
-        # l = QtWidgets.QFormLayout()
-        # l.addWidget()
         return self
 
 
@@ -364,11 +370,6 @@ class WidgetRandomPassword(WidgetWithLayout):
         self.button_create.clicked.connect(self.create_password)
         
     def create_password(self):
-        print(self.lower_validor.validate('01', 0))
-        print(self.lower_validor.validate('23', 0))
-        print(self.lower_validor.validate('24', 0))
-        print(self.lower_validor.validate('25', 0))
-
         lower = int(self.lineedit_lower.text())
         
         upper = int(self.lineedit_upper.text())
@@ -402,3 +403,86 @@ class WidgetRCP(WidgetWithLayout):
     def __init__(self):
         super().__init__(QtWidgets.QGridLayout())
         self.add_widget(QtWidgets.QLabel('远程文件拷贝'))
+
+
+class WidgetSystem(WidgetWithLayout):
+    NAME = '系统信息'
+
+    def __init__(self):
+        super().__init__(QtWidgets.QVBoxLayout())
+        # self.addHSpacer()
+        self.form_os = WidgetForm()
+        # self.form_cpu = WidgetForm()
+        self.form_memory = WidgetForm()
+        self.form_disk = WidgetForm()
+        self.form_net = WidgetForm()
+        
+        for label, value in self.get_os_info().items():
+            self.form_os.add_row(label, QtWidgets.QLineEdit(value))
+        for label, value in self.get_cpu_info().items():
+            self.form_os.add_row(label, QtWidgets.QLineEdit(value))
+        for label, value in self.get_memory_info().items():
+            self.form_os.add_row(label, QtWidgets.QLineEdit(value))
+        for label, value in self.get_disk_info().items():
+            self.form_disk.add_row(label, QtWidgets.QLineEdit(value))
+        for label, value in self.get_net_info().items():
+            self.form_net.add_row(label, QtWidgets.QLineEdit(value))
+
+        # self.add_widget(QtWidgets.QLabel('基本信息'))
+        self.add_widget(self.form_os, add_hspacer=False)
+
+        # self.add_widget(QtWidgets.QLabel('CPU'))
+        # self.add_widget(self.form_cpu, add_hspacer=False)
+
+        # self.add_widget(QtWidgets.QLabel('内存'))
+        # self.add_widget(self.form_memory, add_hspacer=False)
+
+        self.add_label('磁盘').add_widget(self.form_disk, add_hspacer=False)
+        self.add_label('网络').add_widget(self.form_net, add_hspacer=False)
+
+        self.addStretch()
+
+    def get_os_info(self):
+        os_uname = system.os.uname()
+        return {'操作系统': os_uname.system + ' ' + os_uname.release,
+                '版本号': os_uname.version,
+                '主机名': os_uname.node,
+                '机器类型': os_uname.machine,
+                '处理器': os_uname.processor}
+
+    def get_cpu_info(self):
+        cpu_count = system.cpu.count()
+        cpu_freq = system.cpu.freq()
+        return {'物理核数': str(cpu_count.phy_core),
+                '逻辑核数': str(cpu_count.v_core),
+                '主频': str(cpu_freq.current)}
+
+    def get_memory_info(self):
+        return {'总内存': '%.2f GB' % (system.memory.virtual().total / ONE_G),
+                '交换内存': '%.2f GB' %  (system.memory.swap().total / ONE_G)}
+
+    def get_disk_info(self):
+        disk_info = {}
+        partitions = system.disk.partitions()
+        for part in partitions:
+            disk_info[part.device] = '%.2f GB' \
+                % (system.disk.usage(part.device).total / ONE_G)
+        return disk_info
+
+    def get_net_info(self):
+        net_info = {}
+        if_addrs = system.net.if_addrs()
+        
+        for net, snicaddr_list in if_addrs.items():
+            if 'Loopback' in net:
+                continue
+            if not snicaddr_list:
+                net_info[net] = ''
+            else:
+                for snicaddr in snicaddr_list:
+                    if snicaddr.family == 2:
+                        net_info[net] = snicaddr.address
+                        break
+                else:
+                    net_info[net] = ''
+        return net_info

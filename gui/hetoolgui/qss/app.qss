@@ -26,14 +26,14 @@ QPushButton[class=default] {
     color: white;
     border: 0px solid #007BFF;
     border-radius: 6px;
-    padding:4px 4px;
+    padding:6px 4px;
 }
 QPushButton::pressed[class=default] {
     background: #0069D9;
     color: white;
     border: 0px solid #0069D9;
     border-radius: 6px;
-    padding:4px 4px;
+    padding: 6px 4px;
 }
 
 
