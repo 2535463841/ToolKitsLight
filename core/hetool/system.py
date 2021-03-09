@@ -8,6 +8,16 @@ cpu_count = collections.namedtuple('cpu_count', 'phy_core v_core')
 class os:
 
     @staticmethod
+    def is_linux():
+        platform_name = os.uname()[0]
+        return 'linux' in platform_name.lower()
+
+    @staticmethod
+    def is_windows():
+        platform_name = os.uname()[0]
+        return 'windows' in platform_name.lower()
+
+    @staticmethod
     def uname():
         return platform.uname()
 
