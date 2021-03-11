@@ -61,21 +61,33 @@ def convert_base(src_number,  src_base: int, target_base: int=10):
         return target_num
 
 
-def create_qrcode(content, output=None):
-    """create qrcode
-    >>> test_qrcode = create_qrcode('http://www.baidu.com')
-    >>> test_qrcode is None
-    False
+class QRCodeExtend(qrcode.QRCode):
     """
-    img = qrcode.make(content)
-    if output:
-        img.save(output)
-    return img
-    # qr = qrcode.QRCode(
-    #     version=5,
-    #     error_correction=qrcode.constants.ERROR_CORRECT_H,
-    #     box_size=8,
-    #     border=4)
+    >>> code = QRCodeExtend()
+    >>> code.add_data('http://www.baidu.com')
+    >>> lines = qr.parse_string_lines()
+    """
+    char_map = {
+            True: {True: '█', False: '▀'},
+            False:{True: '▄', False: ' '}
+        }
+
+    def parse_string_lines(self):
+        """parse qrcode to string lines
+        """
+        matrix = self.get_matrix()
+        rows = len(matrix)
+        columns = len(matrix[0])
+        if rows / 2 != 0:
+            matrix.append([False] * columns)
+
+        def get_char(x, y):
+            x_next = x + 1
+            return self.char_map.get(matrix[x][y]).get(matrix[x_next][y])
+        lines = []
+        for line in range(0, rows, 2):
+            lines.append(''.join([get_char(line, i) for i in range(columns)]))
+        return lines
 
 
 def random_password(lower=4, upper=4, number=4, special=4):

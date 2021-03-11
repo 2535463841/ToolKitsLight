@@ -9,13 +9,14 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QGridLayout, QWidget
 from PyQt5 import QtCore
 from PyQt5 import QtGui
-from PyQt5.QtCore import Qt, QtFatalMsg
+from PyQt5.QtCore import Qt
 
 from hetool import code
 from hetool import date
 from hetool import location
 from hetool import system
 
+from ui import style
 
 LOG = log.getLogger(__name__)
 
@@ -169,16 +170,17 @@ class QrCodeWidget(WidgetWithLayout):
     NAME = '二维码生成器'
 
     def __init__(self):
-        super().__init__(QtWidgets.QGridLayout())
+        super().__init__(QtWidgets.QVBoxLayout())
         self.addHSpacer()
         self.texteditor_content = QtWidgets.QTextEdit('请输入需要生成的内容')
         self.texteditor_content.setFixedHeight(100)
         self.label_qrcode = QtWidgets.QLabel('显示二维码')
-        self.label_qrcode.setFixedHeight(600)
-
+        self.textexit_qrcode = QtWidgets.QTextEdit()
+        self.label_qrcode.setStyleSheet(style.FONT_CONSOLAS)
         self.add_widget(self.texteditor_content)
         self.add_widget(self.label_qrcode)
 
+        self.addStretch()
         self.texteditor_content.textChanged.connect(self.texteditor_changed)
 
     def texteditor_changed(self):
@@ -186,17 +188,14 @@ class QrCodeWidget(WidgetWithLayout):
 
     def create_qrcode(self):
         content = self.texteditor_content.toPlainText()
-        save_dir = os.path.join('.', 'tmp')
-        save_file = os.path.join(save_dir, 'qrcode.jpg')
-        if not os.path.exists(save_dir):
-            os.makedirs(save_dir)
-        elif os.path.exists(save_file):
-            os.remove(save_file)
-        code.create_qrcode(content, output=save_file)
-        if os.path.exists(save_file):
-            self.label_qrcode.setPixmap(QtGui.QPixmap(save_file))
+        if not content:
+            text = '请输入要生成的内容...'
         else:
-            LOG.error('create qrcode file failed')
+            qr = code.QRCodeExtend()
+            qr.add_data(content)
+            text = '\n'.join(qr.parse_string_lines())
+            qr.clear()
+        self.label_qrcode.setText(text)
 
 
 class WidgetBaseConverter(WidgetWithLayout):
@@ -226,6 +225,7 @@ class WidgetBaseConverter(WidgetWithLayout):
             if not text:
                 text = '0'
             texteditor.setProperty('level', 'default')
+            # texteditor.setStyle()
             texteditor.setStyleSheet(self.load_qss('app.qss') )
             if int(text, num) == self.data:
                 return
