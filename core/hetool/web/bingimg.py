@@ -55,16 +55,16 @@ class BingImagDownloader:
                                                     process=process
         )
         # request page and find all img links
-        img_links = self.get_page_url(page, resolution=resolution,
-                          downloader=download_dir)
+        img_links = self.find_all_links(page, resolution=resolution,
+                                        driver=download_dir)
         LOG.info('found %s links in page %s', len(img_links), page)
         download_driver.download(img_links)
 
     def get_page_url(self, page):
         return '{}://{}/list{}'.format(self.scheme, self.host, page)
 
-    def find_all_links(self, page, resolution=None, downloader=None):
-        download_driver = downloader or downloader.HttpDownloader()
+    def find_all_links(self, page, resolution=None, driver=None):
+        download_driver = driver or downloader.HttpDownloader()
         resp = download_driver.http.request('GET', self.get_page_url(page))
         if resp.status != 200:
             raise Exception('http reqeust failed, %s' % resp.data)
