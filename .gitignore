@@ -5,3 +5,5 @@
 *.pyc
 .vscode
 readme.ipynb
+*.ipynb
+core/hetool/httpfs/static/*

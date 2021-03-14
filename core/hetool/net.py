@@ -44,3 +44,11 @@ def ping(host):
     else:
         result = executor.LinuxExecutor.execute(['ping', '-n', '3'])
     return result.status == 0
+
+
+def get_internal_ip():
+    """Get the internal network IP address
+    """
+    s = socket.socket(socket.AF_INET,socket.SOCK_DGRAM) 
+    s.connect(('8.8.8.8',80)) 
+    return s.getsockname()[0]

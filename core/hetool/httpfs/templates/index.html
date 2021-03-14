@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Hetool HttpFS</title>
+
+    <!-- jQuery -->
+    <script src="/static/jquery-3.6.0.min.js"></script>
+    <!-- css -->
+    <link rel="stylesheet" href="/static/foundation/foundation.css">
+    <link rel="stylesheet" href="/static/foundation-icons/foundation-icons.css">
+    
+    <!-- JavaScript -->
+    <script src="/static/foundation/foundation.js"></script>
+        
+    <!-- Vue -->
+    <script src="/static/vue/vue.min.js"></script>
+</head>
+<body>
+    <div id='app'>
+
+    <div class="grid-x grid-padding-x" id='app'>
+        <div class="cell large-2"> </div>
+        <div class="cell medium-10 large-8 small-10">
+            <h2>Hetool FS</h2>
+            
+            <button type="button" class="button small hollow secondary">上传文件</button>
+            <button type="button" class="button small hollow secondary">上传目录</button>
+            <button type="button" class="button small hollow secondary">新建文件</button>
+            <button type="button" class="button small hollow secondary">新建目录</button>
+            <br/>
+        </div>
+        <div class="cell large-2"> </div>
+    </div>
+    <div class="grid-x">
+        <div class="cell large-2"> </div>
+        <div class="cell medium-4 small-4 large-2">
+            <a class="button clear secondary" href="#"><i class="fi-home"></i> 首页</a>
+            <a class="button clear" href="#" v-on:click='goBack()'><i class="fi-arrow-up"></i> 返回...</a>
+        </div>
+        <div class="cell medium-8 small-8 large-6">
+            <input type="text" v-model="currentDir">
+        </div>
+        <div class="cell large-2"> </div>
+    </div>
+    <div class="grid-x grid-padding-x">
+        <div class="cell large-2"> 
+            
+            
+        </div>
+        <div class="cell medium-12 small-12 large-8 ">
+            <!-- 扫码连接
+            <textarea name="" id="" cols="30" rows="10" style="font-family:Consolas; font-size: 1;">{{linkQrcode}}</textarea> -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>文件</th><th>大小</th><th>修改时间</th><th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(item, index) in children" v-model="children">
+                        <td v-on:click="clickPath(item)" v-if='item.type=="folder"'>
+                            <i class='fi-folder'> </i> {{item.name}}
+                        </td>
+                        <td v-else>
+                            <i class='fi-page'> </i>
+                            <a :href="'/download/'+item.name+'?path='+getAbsPath(item)" target="_blank"> {{item.name}}</a>
+                        </td>
+                        <td>{{item.size}}</td>
+                        <td>{{item.modify_time}}</td>
+                        <td><button v-on:click="showQrcode(item)"><i class="fi-photo"></i></button></td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+        <div class="cell large-2"> </div>
+    </div>
+</div>
+    <!-- <li>
+        <a href="{{ current_path }}/{{ path }}">{{ path }}</a>
+    </li> -->
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data: {
+                currentDir: '',
+                children: [],
+                historyPath: [],
+                linkQrcode: ''
+            },
+            methods: {
+                changeDirectory: function(path, pushHistory=false){
+                    if (pushHistory){
+                        this.historyPath.push(this.currentDir);
+                    }
+                    if (this.currentDir == '/'){
+                        this.currentDir = this.currentDir + path;
+                    }else{
+                        this.currentDir = this.currentDir + '/' + path;
+                    }
+                    this.refreshChildren();
+                },
+                goBack: function(){
+                    var lastHref = this.historyPath.pop();
+                    if (typeof(lastHref) == 'undefined'){
+                        lastHref = '/';
+                    }
+                    this.currentDir = lastHref;
+                    this.refreshChildren();
+                },
+                refreshChildren: function(){
+                    if (this.currentDir == ''){
+                        return
+                    }
+                    var self = this;
+                    var xhr = new XMLHttpRequest();
+                    xhr.onload = function () {
+                        var data = JSON.parse(xhr.responseText);
+                        self.children = data.dir.children;
+                    };
+                    xhr.onerror = function () {
+                        console.error('request error');
+                    };
+                    xhr.open("GET", '/dir?path=' + this.currentDir, true);
+                    xhr.send();
+                },
+                getAbsPath: function(child){
+                    var absPath = this.currentDir;
+                    if (absPath == '/'){
+                        absPath += child.name;
+                    }else{
+                        absPath += '/' + child.name;
+                    }
+                    return absPath;
+                },
+                clickPath: function(child){
+                    if (child.type == "folder") {
+                        this.changeDirectory(child.name, pushHistory=true);
+                    }
+                },
+                showQrcode: function(child){
+                    var context = '';
+                    child.qrcode.forEach(function(value, index){
+                        context += value + '\n';
+                    });
+                    console.log(context)
+                },
+                showLinkQrcode: function(){
+                    var self = this;
+                    var xhr = new XMLHttpRequest();
+                    xhr.onload = function () {
+                        var data = JSON.parse(xhr.responseText);
+                        console.log(data.qrcode.lines);
+                        data.qrcode.lines.forEach(function(val, index){
+                            self.linkQrcode += val + '\n';
+                        })
+                        console.log(self.linkQrcode);
+                    };
+                    xhr.onerror = function () {
+                        console.error('request error');
+                    };
+                    xhr.open("GET", '/linkQrcode', true);
+                    xhr.send();
+                }
+
+            },
+            created: function(path){
+                console.log('document loaded');
+                this.showLinkQrcode();
+                this.changeDirectory('', pushHistory=true);
+            },
+        });
+
+    </script>
+</body>
+
+</html>
