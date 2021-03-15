@@ -65,7 +65,7 @@ class QRCodeExtend(qrcode.QRCode):
     """
     >>> code = QRCodeExtend()
     >>> code.add_data('http://www.baidu.com')
-    >>> lines = qr.parse_string_lines()
+    >>> lines = code.parse_string_lines()
     """
     char_map = {
             True: {True: '█', False: '▀'},
@@ -88,6 +88,13 @@ class QRCodeExtend(qrcode.QRCode):
         for line in range(0, rows, 2):
             lines.append(''.join([get_char(line, i) for i in range(columns)]))
         return lines
+
+    def parse_image_buffer(self):
+        """parse qrcode to BytesIO buffer 
+        """
+        buffer = io.BytesIO()
+        self.make_image().save(buffer)
+        return buffer
 
 
 def random_password(lower=4, upper=4, number=4, special=4):
