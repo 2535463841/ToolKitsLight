@@ -9,11 +9,14 @@ from flask import Flask
 from hetool import date
 from hetool import code
 from hetool import net
+from werkzeug.utils import redirect
 
 HOST = None
 PORT = 8000
 
 ROUTE = os.path.dirname(os.path.abspath(__file__))
+TEMPLATES = os.path.join(ROUTE, 'templates')
+STATIC = os.path.join(ROUTE, 'static')
 
 
 class FSController:
@@ -140,15 +143,19 @@ class ActionView(views.MethodView):
         print(flask.request)
 
 
-app = Flask(__name__,
-            template_folder=os.path.join(ROUTE, 'templates'),
-            static_folder=os.path.join(ROUTE, 'static')
-)
+class FaviconView(views.MethodView):
+    
+    def get(self):
+        return flask.send_from_directory(STATIC, 'httpfs.png')
+
+app = Flask(__name__, template_folder=TEMPLATES, static_folder=STATIC)
 
 # avoid conflict with vue
 app.jinja_env.variable_start_string = '[['
 app.jinja_env.variable_end_string = ']]'
 
+
+app.add_url_rule(r'/favicon.ico', view_func=FaviconView.as_view('favicon'))
 app.add_url_rule(r'/', view_func=HomeView.as_view('home'))
 app.add_url_rule(r'/index.html', view_func=IndexView.as_view('index'))
 app.add_url_rule(r'/dir', view_func=DirView.as_view('dir'))
@@ -159,9 +166,13 @@ app.add_url_rule(r'/qrcode',
                  view_func=QrcodeView.as_view('qrcode'))
 
 
+
 def main():
-    global HOST
+    import sys
+    global HOST, fs_controller
     HOST = net.get_internal_ip()
+    if len(sys.argv[1]) > 1:
+        fs_controller = FSController(sys.argv[1])
     app.run(host=HOST, port=8000, debug=True)
 
 
