@@ -11,10 +11,10 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 
-from hetool import code
-from hetool import date
-from hetool import location
-from hetool import system
+from wetool import code
+from wetool import date
+from wetool import location
+from wetool import system
 
 from ui import style
 

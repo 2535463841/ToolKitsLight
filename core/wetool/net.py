@@ -2,8 +2,8 @@ import socket
 from collections import namedtuple
 from concurrent import futures
 
-from hetool import executor
-from hetool import system
+from wetool import executor
+from wetool import system
 
 
 ScanResult = namedtuple('ScanResult', 'host port connectable')

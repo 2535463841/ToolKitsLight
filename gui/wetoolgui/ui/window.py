@@ -1,9 +1,9 @@
-import os
-import re
 import logging
+
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from PyQt5 import QtGui
+
 from ui import dialogs
 from ui import widgets
 
