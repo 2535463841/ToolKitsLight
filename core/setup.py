@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 
-setup(name='hetool',
+setup(name='wetool',
       version='0.1',
       description='python toolkits',
       author='zbw',
