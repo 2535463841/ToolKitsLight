@@ -33,40 +33,45 @@ class FSController:
     def path_exists(self, path):
         return os.path.exists(self.get_abs_path(path))
 
-    def _get_qrcode_lines(self, path, child):
-        qr = code.QRCodeExtend()
-        if path == '/':
-            qr.add_data(
-                'http://{0}:{1}/download/{2}?path=/{2}'.format(
-                    HOST, PORT, child))
-        else:
-            qr.add_data(
-                'http://{0}:{1}/download/{3}?path={2}/{3}'.format(
-                    HOST, PORT, path, child))
-        return qr.parse_string_lines()
+    def get_path_dict(self, file_name, path, pathstat):
+        return {'name': file_name,
+                'size': self.parse_size(pathstat.st_size),
+                'modify_time': date.parse_timestamp2str(
+                    pathstat.st_mtime, '%Y-%m-%d %H:%M:%S %Z'),
+                'type': 'folder' if stat.S_ISDIR(pathstat.st_mode) else 'file',
+                'qrcode': '' if stat.S_ISDIR(pathstat.st_mode) else \
+                    '/qrcode?file={0}&path={1}'.format(file_name, path)
+        }
 
     def get_dirs(self, path):
         children = []
         if not path:
             return children
         find_path = self.get_abs_path(path)
+        dirs = []
         for child in os.listdir(find_path):
             pathstat = os.stat(os.path.join(find_path, child))
-            if stat.S_ISDIR(pathstat.st_mode):
-                lines = []
-            else:
-                lines = self._get_qrcode_lines(path, child)
-            children.append({
-                'name': child,
-                'size': self.parse_size(pathstat.st_size),
-                'modify_time': date.parse_timestamp2str(
-                    pathstat.st_mtime, '%Y-%m-%d %H:%M:%S %Z'),
-                'type': 'folder' if stat.S_ISDIR(pathstat.st_mode) else 'file',
-                'qrcode': lines
-            })
-        children = sorted(children, key=lambda item: item['type'],
-                          reverse=True)
-        return children
+            dirs.append(self.get_path_dict(child, path, pathstat))
+        return sorted(dirs, key=lambda k:k['type'], reverse=True)
+
+    def _get_file_type(self, file_name):
+        suffix = os.path.splitext(file_name)[1]
+        file_suffix_map = {
+            'video': ['mp4', 'avi', 'mpeg'],
+            'pdf': ['pdf'],
+            'word': ['word'],
+            'excel': ['xls', 'xlsx'],
+            'archive': ['zip', 'tar', 'rar', '7zip'],
+            'python': ['py', 'pyc']
+        }
+        if not suffix:
+            return 'file'
+        if suffix:
+            suffix = suffix[1:].lower()
+            for key, values in file_suffix_map.items():
+                if suffix in values:
+                    return key
+            return 'file'
 
     def parse_size(self, size):
         ONE_KB = 1024
@@ -101,7 +106,14 @@ class QrcodeView(views.MethodView):
     
     def get(self):
         qr = code.QRCodeExtend(border=1)
-        qr.add_data('http://{0}:{1}'.format(HOST, PORT))
+        file_name = flask.request.args.get('file')
+        file_path = flask.request.args.get('path')
+        if file_name and file_path:
+            qr.add_data('http://{0}:{1}/download/{2}?path={3}'.format(
+                HOST, PORT, file_name, file_path))
+        else:
+            qr.add_data('http://{0}:{1}'.format(HOST, PORT))
+            
         buffer = qr.parse_image_buffer()
         return buffer.getvalue()
 
@@ -141,6 +153,10 @@ class ActionView(views.MethodView):
     def post(self):
         print(self)
         print(flask.request)
+        qr = code.QRCodeExtend(border=1)
+        qr.add_data('http://{0}:{1}/index.html?path=xxxxxx'.format(HOST, PORT))
+        buffer = qr.parse_image_buffer()
+        return buffer.getvalue()
 
 
 class FaviconView(views.MethodView):
