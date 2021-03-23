@@ -71,7 +71,6 @@ class FSController:
             return children
         find_path = self.get_abs_path(path)
         dirs = []
-        print('all', all)
         for child in os.listdir(find_path):
             child_path = os.path.join(find_path, child)
             
