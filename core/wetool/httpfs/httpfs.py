@@ -1,14 +1,18 @@
 import os
 import stat
 import json
+from sys import path
 import flask
 
 from flask import views
 from flask import Flask
+from flask import Response
 
 from hetool import date
 from hetool import code
 from hetool import net
+from qrcode import constants
+
 from werkzeug.utils import redirect
 
 HOST = None
@@ -37,20 +41,45 @@ class FSController:
         return {'name': file_name,
                 'size': self.parse_size(pathstat.st_size),
                 'modify_time': date.parse_timestamp2str(
-                    pathstat.st_mtime, '%Y-%m-%d %H:%M:%S %Z'),
+                    pathstat.st_mtime, '%Y/%m/%d %H:%M'),
                 'type': 'folder' if stat.S_ISDIR(pathstat.st_mode) else 'file',
                 'qrcode': '' if stat.S_ISDIR(pathstat.st_mode) else \
                     '/qrcode?file={0}&path={1}'.format(file_name, path)
         }
 
-    def get_dirs(self, path):
+    def create_dir(self, path):
+        abs_path = self.get_abs_path(path)
+        if self.path_exists(abs_path):
+            return FileExistsError(path)
+        os.makedirs(abs_path)
+
+    def delete_dir(self, path, file_name=None):
+        if file_name:
+            abs_path = self.get_abs_path(path + '/' + file_name)
+        else:
+            abs_path = self.get_abs_path(path)
+        if not self.path_exists(abs_path):
+            raise FileNotFoundError(path)
+        elif os.path.isdir(abs_path):
+            os.removedirs(abs_path)
+        else:
+            os.remove(abs_path)
+
+    def get_dirs(self, path, all=False):
         children = []
         if not path:
             return children
         find_path = self.get_abs_path(path)
         dirs = []
+        print('all', all)
         for child in os.listdir(find_path):
-            pathstat = os.stat(os.path.join(find_path, child))
+            child_path = os.path.join(find_path, child)
+            
+            if not all and \
+                (child.startswith('.') or not os.access(child_path, os.R_OK)):
+                print('continue')
+                continue
+            pathstat = os.stat(child_path)
             dirs.append(self.get_path_dict(child, path, pathstat))
         return sorted(dirs, key=lambda k:k['type'], reverse=True)
 
@@ -87,6 +116,10 @@ class FSController:
             return '{:.2f} B'.format(size)
 
 
+def get_json_response(data, status=200):
+    return flask.Response(json.dumps(data), status=status)
+
+
 fs_controller = FSController('e:')
 
 
@@ -103,7 +136,7 @@ class IndexView(views.MethodView):
 
 
 class QrcodeView(views.MethodView):
-    
+
     def get(self):
         qr = code.QRCodeExtend(border=1)
         file_name = flask.request.args.get('file')
@@ -139,9 +172,10 @@ class DownloadView(views.MethodView):
     def get(self, file_name):
         req_path = flask.request.args.get('path', '/')
         download_path = req_path + '/' + file_name
+        print('download', download_path)
         if not fs_controller.path_exists(download_path):
-            return flask.Response(json.dumps({'error': 'path is not exists'}),
-                                  status=404)
+            return get_json_response({'error': 'path is not exists'},
+                                     status=404)
         abs_path = fs_controller.get_abs_path(download_path)
         directory = os.path.dirname(abs_path)
         return flask.send_from_directory(
@@ -150,19 +184,67 @@ class DownloadView(views.MethodView):
 
 class ActionView(views.MethodView):
 
+    ACTION_MAP = {
+        'list_dir': 'list_dir',
+        'create_dir': 'create_dir',
+        'delete_dir': 'delete_dir',
+        'get_qrcode': 'get_qrcode'
+    }
+
     def post(self):
-        print(self)
-        print(flask.request)
-        qr = code.QRCodeExtend(border=1)
-        qr.add_data('http://{0}:{1}/index.html?path=xxxxxx'.format(HOST, PORT))
-        buffer = qr.parse_image_buffer()
-        return buffer.getvalue()
+        data = json.loads(flask.request.get_data())
+        print(data)
+        if 'action' not in data:
+            msg = 'action not found in body'
+            return get_json_response({'error': msg}, status=400)
+        name = data.get('action').get('name')
+        if name not in self.ACTION_MAP:
+            msg = 'action %s is not supported'.format(name)
+            return get_json_response({'error': msg}, status=400)
+        try:
+            resp_body = getattr(self, name)(data.get('action').get('params'))
+            return resp_body
+        except Exception as e:
+            return get_json_response({'error': str(e)}, status=400) 
+
+    def list_dir(self, params):
+        self._check_params(params)
+        req_path = params.get('path')
+        print(params)
+        return {'dir': {
+            'path': req_path,
+            'children': fs_controller.get_dirs(
+                req_path, all=params.get('all', False))}
+        }
+
+    def create_dir(self, params):
+        if not params.get('path'):
+            raise ValueError('path is None')
+        req_path = params.get('path')
+        if fs_controller.path_exists(req_path):
+            raise ValueError('path is already exists')
+        fs_controller.create_dir(req_path)
+        return {'result': 'create success'}
+
+    def delete_dir(self, params):
+        self._check_params(params)
+        fs_controller.delete_dir(params.get('path'),
+                                 file_name=params.get('file'))
+        return {'result': 'delete success'}
+
+    def _check_params(self, params):
+        req_path = params.get('path')
+        if not req_path:
+            raise ValueError('path is None')
+        if not fs_controller.path_exists(req_path):
+            raise ValueError('path is not exists')
 
 
 class FaviconView(views.MethodView):
     
     def get(self):
         return flask.send_from_directory(STATIC, 'httpfs.png')
+
 
 app = Flask(__name__, template_folder=TEMPLATES, static_folder=STATIC)
 

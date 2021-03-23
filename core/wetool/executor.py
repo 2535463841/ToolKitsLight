@@ -38,3 +38,25 @@ class LinuxExecutor(object):
         p.communicate()
         LOG.debug('Stdout: %s, Stderr: %s', out, err)
         return ExecuteResult(p.returncode, ''.join(out), ''.join(err))
+
+
+
+import os
+import stat
+
+
+# for f in os.listdir('g:'):
+path = os.path.join('g:', 'pagefile.sys')
+print(os.path.exists(path))
+
+# os.remove(path)
+# os.removedirs(path)
+
+path_stat = os.stat(path)
+# print(stat.S_ISFIFO(path_stat.st_mode))
+print(os.access(path, os.W_OK))
+
+# for f in os.listdir(path):
+#     print(f)
+    
+# print(os.access(path, os.))

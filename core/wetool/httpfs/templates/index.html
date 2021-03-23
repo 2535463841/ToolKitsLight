@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Hetool HttpFS</title>
@@ -8,205 +9,142 @@
     <!-- Vue -->
     <script src="/static/vue/vue.min.js"></script>
 
-    <!-- css -->
-    <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
-    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
+    <!-- bootstrap css -->
+    <link rel="stylesheet" href="/static/bootstrap-4.6.0/css/bootstrap.min.css">
 
     <!-- fontawesome -->
     <link rel="stylesheet" href="/static/fontawesome/css/fontawesome.min.css">
     <script src="/static/fontawesome/js/all.min.js"></script>
 
+    <!-- bootstrap-vue  -->
+    <link rel="stylesheet" href="/static/bootstrap-vue/bootstrap-vue.min.css">
+    <script src="/static/bootstrap-vue/bootstrap-vue.min.js"></script>
+    <script src="/static/bootstrap-vue/bootstrap-vue-icons.min.js"></script>
 </head>
-<body>
-<div id='app' class="container">
-    <div class="row">
-        <div class="col-1">
-            <span>扫一扫连接</span>
-            <br>
-            <img src="/qrcode" alt="" style="height: 100px">
-        </div>
-        <div class="col-9" @keyup.delete="alter(1)">
-            <h2>WeTool FS</h2>
 
-            <button type="button" class="btn btn-outline-secondary">上传文件</button>
-            <button type="button" class="btn btn-outline-secondary">上传目录</button>
-            <button type="button" class="btn btn-outline-secondary">新建文件</button>
-            <button type="button" class="btn btn-outline-secondary">新建目录</button>
-            <br/>
-        </div>
-        <div class="col-2"> </div>
-    </div>
-    <div class="row">
-        <div class="col-1"></div>
-        <div class="col-2">
-            <a class="text-decoration-none" href="#" v-on:click='goHome()'><i class="fas fa-home"></i> 首页</a>
-            <a class="text-decoration-none" href="#" v-on:click='goBack()'><i class="fas fa-arrow-up"></i> 返回</a>
-            <a class="text-decoration-none" href="#" ><i class="fi-refresh" style="font-size: large; "></i></a>
-        </div>
-        <div class="col-6">
-            <input type="text" class="form-control" v-model="currentDir">
-        </div>
-        <div class="col-2"> </div>
-    </div>
-    <div class="row">
-        <div class="col-1"> </div>
-        <div class="col-9">
-            <table class="table table-hover table-sm ">
-                <thead class="table-light">
-                    <tr>
-                        <th>文件</th><th>大小</th><th>修改时间</th><th>操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(item, index) in children" v-model="children">
-                        <td v-on:click="clickPath(item)" v-if='item.type=="folder"'>
-                            <i class='fas fa-folder' style="color:orange"> </i> {{item.name}}
-                        </td>
-                        <td v-else>
-                            <i class="fas fa-file" style="color:cadetblue"> </i>
-                            <a :href="'/download/'+item.name+'?path='+ currentDir" target="_blank"> {{item.name}}</a>
-                        </td>
-                        <td>{{item.size}}</td>
-                        <td><p style="font-size: small;">{{item.modify_time}}</p></td>
-                        <td>
-                            <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
-                                <button class="btn btn-danger" v-on:click="deleteDir(item)">
-                                        <i class="fas fa-trash-alt"></i></button>
-                                <button class="btn btn-info" v-on:click="showQrcode(item)" v-if="item.type!='folder'"
-                                        data-bs-toggle="modal" data-bs-target="#exampleModal">
-                                        <i class="fas fa-qrcode"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <!-- Modal -->
-            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">{{downloadFile.name}}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<body>
+    <div id='app' class="container">
+        <div class="row">
+            <div class="col-lg-12 col-sm-12">
+                <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                    <div class="container-fluid">
+                        <a class="navbar-brand" href="#">WeTool FS</a>
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false"
+                            aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
+                            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                                <li class="nav-item">
+                                    <a class="nav-link active" aria-current="page" href="#">Home</a>
+                                </li>
+                                <li class="nav-item">
+                                    <b-a class="nav-link" href="#" v-b-modal.modal-link>扫一扫连接</b-a>
+                                    <b-modal id="modal-link" title="请使用手机浏览器扫一扫">
+                                        <div class="modal-body middle">
+                                            <img src="/qrcode" alt="" class="rounded mx-auto d-block">
+                                        </div>
+                                    </b-modal>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+                                </li>
+                            </ul>
+                            <form class="form-inline my-2 my-lg-0">
+                                <input class="form-control mr-sm-2" type="search" placeholder="Search">
+                                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                            </form>
+                        </div>
                     </div>
-                    <div class="modal-body middle">
-                        <img alt="" :src="downloadFile.qrcode" class="rounded mx-auto d-block" width="200px">
-                    </div>
-                    <div class="modal-footer"> </div>
+                </nav>
+                <br>
+            </div>
+            <div class="col-lg-12 col-sm-12">
+                <button type="button" class="btn btn-outline-secondary">上传文件</button>
+                <button type="button" class="btn btn-outline-secondary">上传目录</button>
+                <button type="button" class="btn btn-outline-secondary">新建文件</button>
+                <button type="button" class="btn btn-outline-secondary">新建目录</button>
+                <br />
+            </div>
+
+            <div class="col-lg-2">
+                <ul class="nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" v-on:click='goHome()'><b-icon icon="house-door-fill"></b-icon></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" v-on:click='goBack()'><b-icon icon="arrow-left"></b-icon></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" v-on:click='refreshChildren()'><b-icon icon="arrow-repeat"></b-icon></a>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-lg-8 col-sm-9">
+                <input type="text" class="form-control" v-model="currentDir" style="font-size:x-small">
+            </div>
+            <div class="col-lg-2 col-sm-3">
+                <div class="form-check form-switch form-switch-success">
+                    <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" v-model="showAll"
+                        v-on:click="toggleShowAll()">
+                    <label class="form-check-label" for="flexSwitchCheckDefault">显示全部</label>
                 </div>
-                </div>
+            </div>
+            <!-- <div class="col-6">
+        </div> -->
+            <div class="col-2"> </div>
+        </div>
+
+        <div class="row">
+            <div class="col-1"> </div>
+            <div class="col-9 col-sm-12">
+                <table class="table table-hover table-sm table-responsive-lg">
+                    <thead class="table-light">
+                        <tr>
+                            <th>文件</th>
+                            <th>大小</th>
+                            <th>修改时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(item, index) in children" v-model="children">
+                            <td v-on:click="clickPath(item)" v-if='item.type=="folder"'>
+                                <i class='fas fa-folder' style="color:orange"> </i> {{item.name}}
+                            </td>
+                            <td v-else>
+                                <i class="fas fa-file" style="color:cadetblue"> </i>
+                                <a :href="getDownloadUrl(item)" target="_blank"> {{item.name}}</a>
+                            </td>
+                            <td>{{item.size}}</td>
+                            <td style="width: 120px">
+                                <span style="font-size: small;">{{item.modify_time}}</span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
+                                    <button class="btn btn-sm btn-danger" v-on:click="deleteDir(item)"><i
+                                            class="fas fa-trash-alt"></i></button>
+                                    <button class="btn btn-sm btn-secondary" v-on:click="rename(item)"> <i
+                                            class="fas fa-edit"></i></button>
+                                    <b-button class="btn btn-sm btn-info" v-on:click="showQrcode(item)"
+                                        v-if="item.type!='folder'" v-b-modal.modal-filelink>
+                                        <i class="fas fa-qrcode"></i></b-button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!-- Modal qrcode -->
+                <b-modal id="modal-filelink" :title="downloadFile.name">
+                    <img alt="" :src="downloadFile.qrcode" class="rounded mx-auto d-block" width="200px">
+                </b-modal>
             </div>
         </div>
     </div>
-</div>
-    <!-- <li>
-        <a href="{{ current_path }}/{{ path }}">{{ path }}</a>
-    </li> -->
-    <script>
-        var app = new Vue({
-            el: '#app',
-            data: {
-                currentDir: '',
-                children: [],
-                historyPath: [],
-                linkQrcode: '',
-                downloadFile: {name: '', qrcode: ''},
-            },
-            methods: {
-                changeDirectory: function(path, pushHistory=false){
-                    if (pushHistory){
-                        this.historyPath.push(this.currentDir);
-                    }
-                    if (this.currentDir == '/'){
-                        this.currentDir = this.currentDir + path;
-                    }else{
-                        this.currentDir = this.currentDir + '/' + path;
-                    }
-                    this.refreshChildren();
-                },
-                goBack: function(){
-                    var lastHref = this.historyPath.pop();
-                    if (typeof(lastHref) == 'undefined'){
-                        lastHref = '/';
-                    }
-                    this.currentDir = lastHref;
-                    this.refreshChildren();
-                },
-                goHome: function(){
-                    if (this.currentDir != '/'){
-                        this.historyPath.push(this.currentDir);
-                        this.currentDir = '/';
-                        this.refreshChildren();
-                    }
-                },
-                refreshChildren: function(){
-                    if (this.currentDir == ''){
-                        return
-                    }
-                    var self = this;
-                    var xhr = new XMLHttpRequest();
-                    xhr.onload = function () {
-                        console.log(xhr.status)
-                        if (xhr.status == 200){
-                            var data = JSON.parse(xhr.responseText);
-                            self.children = data.dir.children;
-                        }else{
-                            self.currentDir = self.historyPath.pop();
-                        }
-                    };
-                    xhr.onerror = function () {
-                        console.error('request error');
-                    };
-                    xhr.open("GET", '/dir?path=' + this.currentDir, true);
-                    xhr.send();
-                },
-                getAbsPath: function(child){
-                    var absPath = this.currentDir;
-                    if (absPath == '/'){
-                        absPath += child.name;
-                    }else{
-                        absPath += '/' + child.name;
-                    }
-                    return absPath;
-                },
-                clickPath: function(child){
-                    if (child.type == "folder") {
-                        this.changeDirectory(child.name, pushHistory=true);
-                    }
-                },
-                showQrcode: function(child){
-                    this.downloadFile = child;
-                },
-                showLinkQrcode: function(){
-                    var self = this;
-                    var xhr = new XMLHttpRequest();
-                    xhr.onload = function () {
-                        var data = JSON.parse(xhr.responseText);
-                        console.log(data.qrcode.lines);
-                        data.qrcode.lines.forEach(function(val, index){
-                            self.linkQrcode += val + '\n';
-                        })
-                        console.log(self.linkQrcode);
-                    };
-                    xhr.onerror = function () {
-                        console.error('request error');
-                    };
-                    xhr.open("GET", '/linkQrcode', true);
-                    xhr.send();
-                }
-            },
-            created: function(path){
-                this.changeDirectory('', pushHistory=true);
-                var self = this;
-                document.onkeydown = function(e) {
-                    // backspace(keycode=8) is pressed
-                    if (e.key == "Backspace") {
-                        self.goBack();
-                    }
-                };
-            },
-        });
 
-    </script>
+    <script type="text/javascript" src="/static/app.js"></script>
+
 </body>
 
 </html>

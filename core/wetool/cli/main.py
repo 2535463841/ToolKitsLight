@@ -1,3 +1,4 @@
+import sys
 import logging
 import socket
 import paramiko
@@ -190,8 +191,13 @@ def main():
     if not hasattr(args, 'cli'):
         SUB_CLI_PARSER.print_usage()
     else:
-        args.cli()(args)
+        try:
+            args.cli()(args)
+        except KeyboardInterrupt:
+            print("user interrupt")
+            return 1
+    return 0
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
