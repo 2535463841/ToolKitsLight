@@ -21,10 +21,18 @@ class WetoolFS {
             };
             this.postAction(action, onload_callback, onerror_callback=onerror_callback);
         };
-        this.deleteDir = function (filename, dir, onload_callback, onerror_callback = null) {
+        this.deleteDir = function (dir, filename, onload_callback, onerror_callback = null) {
             var action = {
                 name: 'delete_dir',
                 params: { path: dir, file: filename }
+            };
+            console.log(action);
+            this.postAction(action, onload_callback, onerror_callback = onerror_callback);
+        };
+        this.renameDir = function (filename, dir, newName, onload_callback, onerror_callback = null) {
+            var action = {
+                name: 'rename_dir',
+                params: {path: dir, file: filename, new_name: newName}
             };
             this.postAction(action, onload_callback, onerror_callback = onerror_callback);
         };
@@ -39,7 +47,8 @@ var app = new Vue({
         linkQrcode: '',
         downloadFile: {name: '', qrcode: ''},
         showAll: true,
-        wetoolFS: new WetoolFS()
+        wetoolFS: new WetoolFS(),
+        renameItem: {name: '', newName: ''}
     },
     methods: {
         changeDirectory: function(path, pushHistory=false){
@@ -68,29 +77,29 @@ var app = new Vue({
                 this.refreshChildren();
             }
         },
-        logDebug: function(msg, level='Debug', autoHideDelay=1000){
+        logDebug: function(msg, autoHideDelay=1000, title='Debug',){
             this.$bvToast.toast(msg, {
-                title: level,
+                title: title,
                 variant: 'default',
                 autoHideDelay: autoHideDelay
             });
         },
 
-        logInfo: function(msg, level='Info', autoHideDelay=1000){
+        logInfo: function(msg, autoHideDelay=1000, title='Info'){
             this.$bvToast.toast(msg, {
-                title: level,
+                title: title,
                 variant: 'success',
                 autoHideDelay: autoHideDelay
             });
         },
-        logWarn: function(msg, level='Warn', autoHideDelay=1000){
+        logWarn: function(msg, autoHideDelay=1000, title='Warn'){
             this.$bvToast.toast(msg, {
-                title: level,
+                title: title,
                 variant: 'warning',
                 autoHideDelay: autoHideDelay
             });
         },
-        logError: function(msg, level='Error', autoHideDelay=1000){
+        logError: function(msg, autoHideDelay=5000, level='Error'){
             this.$bvToast.toast(msg, {
                 title: level,
                 variant: 'danger',
@@ -155,8 +164,30 @@ var app = new Vue({
             this.showAll = ! this.showAll;
             this.refreshChildren();
         },
-        renameDir: function(item){
-            this.logError('该功能未实现');
+        renameDir: function(){
+            var self = this;
+            if (self.renameItem.name == self.renameItem.newName || self.renameItem.newName == ''){
+                self.logError('文件名不合法');
+                return;
+            }
+            this.wetoolFS.renameDir(
+                self.renameItem.name, self.currentDir, self.renameItem.newName,
+                function(status, data){
+                    if (status == 200){
+                        self.logInfo('重命名成功');
+                        self.refreshChildren();
+                    }else{
+                        self.logError(`重命名失败, ${status}, ${data.error}`, autoHideDelay=5000)
+                    }
+                },
+                function(){
+                    self.logError('请求失败')
+                }
+            )
+            // this.logError('该功能未实现');
+        },
+        showRenameModal: function(item){
+            this.renameItem = {name: item.name, newName: item.name}
         }
     },
     created: function(){

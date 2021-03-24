@@ -125,11 +125,10 @@
                                 <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
                                     <button class="btn btn-sm btn-danger" v-on:click="deleteDir(item)"><i
                                             class="fas fa-trash-alt"></i></button>
-                                    <button class="btn btn-sm btn-secondary" v-on:click="renameDir(item)"> <i
-                                            class="fas fa-edit"></i></button>
-                                    <b-button class="btn btn-sm btn-info" v-on:click="showQrcode(item)"
-                                        v-if="item.type!='folder'" v-b-modal.modal-filelink>
-                                        <i class="fas fa-qrcode"></i></b-button>
+                                    <b-button class="btn btn-sm btn-secondary" v-on:click="showRenameModal(item)"  v-b-modal.modal-rename>
+                                        <b-icon icon="pencil-square"></b-icon></b-button>
+                                    <b-button class="btn btn-sm btn-info" v-on:click="showQrcode(item)" v-if="item.type!='folder'" v-b-modal.modal-filelink>
+                                        <b-icon icon="upc-scan"></b-icon></b-button>
                                 </div>
                             </td>
                         </tr>
@@ -138,6 +137,10 @@
                 <!-- Modal qrcode -->
                 <b-modal id="modal-filelink" :title="downloadFile.name">
                     <img alt="" :src="downloadFile.qrcode" class="rounded mx-auto d-block" width="200px">
+                </b-modal>
+                <!-- Modal qrcode -->
+                <b-modal id="modal-rename" size="lg" :title="renameItem.name" @ok="renameDir()">
+                    <b-form-input v-model="renameItem.newName" required ></b-form-input>
                 </b-modal>
             </div>
         </div>

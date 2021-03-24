@@ -53,13 +53,19 @@ class FSController:
             return FileExistsError(path)
         os.makedirs(abs_path)
 
+    def rename_dir(self, path, new_name):
+        abs_path = self.get_abs_path(path)
+        new_path = os.path.join(os.path.dirname(abs_path), new_name)
+        os.rename(abs_path, new_path)
+
     def delete_dir(self, path, file_name=None):
+        print('delete_dir', path, file_name)
         if file_name:
             abs_path = self.get_abs_path(path + '/' + file_name)
         else:
             abs_path = self.get_abs_path(path)
         if not self.path_exists(abs_path):
-            raise FileNotFoundError(path)
+            raise FileNotFoundError(abs_path)
         elif os.path.isdir(abs_path):
             os.removedirs(abs_path)
         else:
@@ -187,7 +193,8 @@ class ActionView(views.MethodView):
         'list_dir': 'list_dir',
         'create_dir': 'create_dir',
         'delete_dir': 'delete_dir',
-        'get_qrcode': 'get_qrcode'
+        'get_qrcode': 'get_qrcode',
+        'rename_dir': 'rename_dir'
     }
 
     def post(self):
@@ -204,6 +211,8 @@ class ActionView(views.MethodView):
             resp_body = getattr(self, name)(data.get('action').get('params'))
             return resp_body
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             return get_json_response({'error': str(e)}, status=400) 
 
     def list_dir(self, params):
@@ -230,6 +239,19 @@ class ActionView(views.MethodView):
         fs_controller.delete_dir(params.get('path'),
                                  file_name=params.get('file'))
         return {'result': 'delete success'}
+
+    def rename_dir(self, params):
+        '''
+        params: {'path': 'xxx', 'file': 'yy'}
+        '''
+        self._check_params(params)
+        if not params.get('new_name'):
+            return get_json_response({'error': 'new name is none'}, status=400)
+        fs_controller.rename_dir(
+            os.path.join(params.get('path'), params.get('file') or ''),
+            params.get('new_name'),
+        )
+        return {'result': 'rename success'}
 
     def _check_params(self, params):
         req_path = params.get('path')
