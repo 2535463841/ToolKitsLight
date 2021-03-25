@@ -11,7 +11,6 @@ from flask import Response
 from hetool import date
 from hetool import code
 from hetool import net
-from qrcode import constants
 
 from werkzeug.utils import redirect
 
@@ -67,6 +66,8 @@ class FSController:
         if not self.path_exists(abs_path):
             raise FileNotFoundError(abs_path)
         elif os.path.isdir(abs_path):
+            # TODO
+            # when dir is not empty, remove failed
             os.removedirs(abs_path)
         else:
             os.remove(abs_path)

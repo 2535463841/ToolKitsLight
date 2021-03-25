@@ -37,9 +37,6 @@
                         <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
                             <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
                                 <li class="nav-item">
-                                    <a class="nav-link active" aria-current="page" href="#">Home</a>
-                                </li>
-                                <li class="nav-item">
                                     <b-a class="nav-link" href="#" v-b-modal.modal-link>扫一扫连接</b-a>
                                     <b-modal id="modal-link" title="请使用手机浏览器扫一扫">
                                         <div class="modal-body middle">
@@ -47,10 +44,8 @@
                                         </div>
                                     </b-modal>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
-                                </li>
                             </ul>
+
                             <form class="form-inline my-2 my-lg-0">
                                 <input class="form-control mr-sm-2" type="search" placeholder="Search">
                                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
@@ -58,20 +53,27 @@
                         </div>
                     </div>
                 </nav>
-                <br>
             </div>
-            <div class="col-lg-12 col-sm-12">
-                <button type="button" class="btn btn-outline-secondary">上传文件</button>
-                <button type="button" class="btn btn-outline-secondary">上传目录</button>
-                <button type="button" class="btn btn-outline-secondary">新建文件</button>
-                <button type="button" class="btn btn-outline-secondary">新建目录</button>
-                <br />
+            <div class="col-lg-10 col-sm-12" style="margin-top: 10px;">
+                <label for="inputUploadFile" class="btn btn-sm btn-outline-secondary">上传文件</label>
+                <label for="inputUploadDir" class="btn btn-sm btn-outline-secondary">上传目录</label>
+                <label type="button" class="btn btn-sm btn-outline-secondary">新建文件</label>
+                <label type="button" class="btn btn-sm btn-outline-secondary">新建目录</label>
+                
+                <input type="file" class="custom-file-input" id="inputUploadFile" required hidden multiple>
+                <input type="file" id="inputUploadDir" webkitdirectory="" hidden>
+            </div>
+            <div class="col-lg-2" style="margin-top: 10px;">
+                <div class="custom-control custom-switch">
+                    <input class="custom-control-input" type="checkbox" v-model="showAll" id="showAll" v-on:click="toggleShowAll()">
+                    <label class="custom-control-label" for="showAll">显示全部</label>
+                </div>
             </div>
 
-            <div class="col-lg-2">
-                <ul class="nav">
+            <div class="col-lg-12">
+                <ul class="nav" style="background-color:whitesmoke;">
                     <li class="nav-item">
-                        <a class="nav-link active" href="#" v-on:click='goHome()'><b-icon icon="house-door-fill"></b-icon></a>
+                        <a class="nav-link active" href="#" v-on:click='goHome()'><b-icon icon="house-door"></b-icon></a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#" v-on:click='goBack()'><b-icon icon="arrow-left"></b-icon></a>
@@ -79,21 +81,11 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#" v-on:click='refreshChildren()'><b-icon icon="arrow-repeat"></b-icon></a>
                     </li>
+                    <li class="nav-item col-lg-10">
+                        <input type="text" class="form-control" v-model="currentDir">
+                    </li>
                 </ul>
             </div>
-            <div class="col-lg-8 col-sm-9">
-                <input type="text" class="form-control" v-model="currentDir" style="font-size:x-small">
-            </div>
-            <div class="col-lg-2 col-sm-3">
-                <div class="form-check form-switch form-switch-success">
-                    <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" v-model="showAll"
-                        v-on:click="toggleShowAll()">
-                    <label class="form-check-label" for="flexSwitchCheckDefault">显示全部</label>
-                </div>
-            </div>
-            <!-- <div class="col-6">
-        </div> -->
-            <div class="col-2"> </div>
         </div>
 
         <div class="row">
@@ -102,8 +94,8 @@
                 <table class="table table-hover table-sm table-responsive-lg">
                     <thead class="table-light">
                         <tr>
-                            <th>文件</th>
-                            <th>大小</th>
+                            <th>文件 <b-icon icon="sort-alpha-down"></b-icon></th>
+                            <th>大小 </th>
                             <th>修改时间</th>
                             <th>操作</th>
                         </tr>
@@ -122,14 +114,18 @@
                                 <span style="font-size: small;">{{item.modify_time}}</span>
                             </td>
                             <td>
-                                <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
-                                    <button class="btn btn-sm btn-danger" v-on:click="deleteDir(item)"><i
-                                            class="fas fa-trash-alt"></i></button>
-                                    <b-button class="btn btn-sm btn-secondary" v-on:click="showRenameModal(item)"  v-b-modal.modal-rename>
-                                        <b-icon icon="pencil-square"></b-icon></b-button>
-                                    <b-button class="btn btn-sm btn-info" v-on:click="showQrcode(item)" v-if="item.type!='folder'" v-b-modal.modal-filelink>
-                                        <b-icon icon="upc-scan"></b-icon></b-button>
-                                </div>
+                                <b-button class="btn btn-sm btn-warning" v-on:click="showRenameModal(item)"  v-b-modal.modal-rename
+                                    v-b-tooltip.hover title="重命名">
+                                    <b-icon icon="vr"></b-icon></b-button>
+                                <b-button class="btn btn-sm btn-warning" v-on:click="showFileModal(item)" v-b-modal.modal-rename
+                                    v-b-tooltip.hover title="编辑文件">
+                                    <b-icon icon="pencil-square"></b-icon></b-button>
+                                <b-button class="btn btn-sm btn-info" v-on:click="showQrcode(item)" v-if="item.type!='folder'" v-b-modal.modal-filelink
+                                    v-b-tooltip.hover title="显示二维码">
+                                    <b-icon icon="upc-scan"></b-icon></b-button>
+                                <button class="btn btn-sm btn-danger" v-on:click="deleteDir(item)"
+                                    v-b-tooltip.hover title="删除">
+                                    <b-icon icon="trash"></b-icon></button>
                             </td>
                         </tr>
                     </tbody>
@@ -139,8 +135,15 @@
                     <img alt="" :src="downloadFile.qrcode" class="rounded mx-auto d-block" width="200px">
                 </b-modal>
                 <!-- Modal qrcode -->
-                <b-modal id="modal-rename" size="lg" :title="renameItem.name" @ok="renameDir()">
-                    <b-form-input v-model="renameItem.newName" required ></b-form-input>
+                <b-modal id="modal-rename" size="lg" title="重命名" @ok="renameDir()">
+                    <div class="mb-3">
+                        <label for="exampleFormControlInput1" class="form-label">文件名</label>
+                        <b-form-input class="form-control" :value="renameItem.name" disabled></b-form-input>
+                      </div>
+                      <div class="mb-3">
+                        <label for="exampleFormControlTextarea1" class="form-label">新文件名</label>
+                        <b-form-input class="form-control" v-model="renameItem.newName" required ></b-form-input>
+                      </div>
                 </b-modal>
             </div>
         </div>

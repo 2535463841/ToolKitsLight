@@ -46,7 +46,7 @@ var app = new Vue({
         historyPath: [],
         linkQrcode: '',
         downloadFile: {name: '', qrcode: ''},
-        showAll: true,
+        showAll: false,
         wetoolFS: new WetoolFS(),
         renameItem: {name: '', newName: ''}
     },
@@ -166,8 +166,11 @@ var app = new Vue({
         },
         renameDir: function(){
             var self = this;
-            if (self.renameItem.name == self.renameItem.newName || self.renameItem.newName == ''){
-                self.logError('文件名不合法');
+            if(self.renameItem.name == self.renameItem.newName ){
+                return;
+            }
+            if (self.renameItem.newName == ''){
+                self.logError('文件名不能为空');
                 return;
             }
             this.wetoolFS.renameDir(
