@@ -21,8 +21,7 @@ some simple tools
 
 支持文件上传，下载，二维码扫描下载等功能
 
-![image](https://user-images.githubusercontent.com/16282152/112730324-ef0fe100-8f6b-11eb-9cb2-4b22a54377e1.png)
-
+![image](https://user-images.githubusercontent.com/16282152/112730473-bcb2b380-8f6c-11eb-9a5c-d1e561a8e5cf.png)
 
 ## UI
 
