@@ -17,6 +17,13 @@ some simple tools
 - [ ] 批量文件同步工具
 
 
+## 简单文件服务器
+
+支持文件上传，下载，二维码扫描下载等功能
+
+![image](https://user-images.githubusercontent.com/16282152/112730324-ef0fe100-8f6b-11eb-9cb2-4b22a54377e1.png)
+
+
 ## UI
 
 - [ ] qss
