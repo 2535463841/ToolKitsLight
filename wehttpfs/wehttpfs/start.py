@@ -2,14 +2,10 @@ import os
 import sys
 import logging
 
-from flask import app
-
-from controller import HttpFsServer
+from server import HttpFsServer
 
 
 ROUTE = os.path.dirname(os.path.abspath(__file__))
-TEMPLATES = os.path.join(ROUTE, 'templates')
-STATIC = os.path.join(ROUTE, 'static')
 
 
 def main():
@@ -21,9 +17,8 @@ def main():
     )
     LOG.addHandler(stream_hander)
 
-    server = HttpFsServer(template_folder=TEMPLATES,
-                          static_folder=STATIC,
-                          fs_root=sys.argv[1] if len(sys.argv) > 1 else None)
+
+    server = HttpFsServer(fs_root=sys.argv[1] if len(sys.argv) > 1 else None)
     server.start(debug=True)
 
 

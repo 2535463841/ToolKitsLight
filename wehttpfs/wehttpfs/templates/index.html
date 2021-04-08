@@ -35,8 +35,13 @@
                                 <b-a href="#" v-b-modal.modal-link>{{translate('scanLink')}}</b-a>
                             </b-nav-item>
                         </b-navbar-nav>
-
+                        <b-navbar-nav>
+                            <b-nav-item href="#">
+                                <b-a href="#" v-b-modal.modal-link>{{translate('scanLink')}}</b-a>
+                            </b-nav-item>
+                        </b-navbar-nav>
                         <!-- Right aligned nav items -->
+
                         <b-navbar-nav class="ml-auto">
                             <b-a class="nav-link text-warning" href="#" v-b-modal.modal-upload right>
                                 <b-icon icon="cloud-upload"></b-icon>
@@ -44,14 +49,17 @@
                                 </b-badge>
                             </b-a>
                             <b-nav-form right>
-                                <b-form-input size="sm" class="mr-sm-2" :placeholder="translate('pleaseInput')"></b-form-input>
+                                <b-form-input size="sm" class="mr-sm-2" :placeholder="translate('pleaseInput')">
+                                </b-form-input>
                                 <b-button size="sm" class="my-2 my-sm-0" type="button">{{translate('search')}}
                                 </b-button>
                             </b-nav-form>
 
                             <b-nav-item-dropdown :text="translate('lang')" right>
-                                <b-dropdown-item href="#" v-on:click="setDisplayLang('en'); location.reload();">{{translate('en')}}</b-dropdown-item>
-                                <b-dropdown-item href="#" v-on:click="setDisplayLang('zh'); location.reload();">{{translate('zh')}}</b-dropdown-item>
+                                <b-dropdown-item href="#" v-on:click="setDisplayLang('en'); location.reload();">
+                                    {{translate('en')}}</b-dropdown-item>
+                                <b-dropdown-item href="#" v-on:click="setDisplayLang('zh'); location.reload();">
+                                    {{translate('zh')}}</b-dropdown-item>
                             </b-nav-item-dropdown>
 
                             <b-nav-item-dropdown right>
@@ -63,77 +71,75 @@
                         </b-navbar-nav>
                     </b-collapse>
                 </b-navbar>
-
             </div>
-            <div class="col-lg-10 col-sm-12" style="margin-top: 10px;">
+            <div class="col-lg-10 col-sm-9" style="margin-top: 10px;">
                 <label for="inputUploadFile"
                     class="btn btn-sm btn-outline-secondary">{{translate('uploadFiles')}}</label>
                 <label for="inputUploadDir" class="btn btn-sm btn-outline-secondary">{{translate('uploadDir')}}</label>
                 <label type="button" class="btn btn-sm btn-outline-secondary"
                     v-b-modal.modal-newdir>{{translate('newDir')}}</label>
+                
+                <label>
+                    <b-icon icon="hdd-fill" variant="secondary"></b-icon> {{getDiskUsage()}}
+                    <b-progress :max="diskUsage.total" variant="secondary" style="height: 4px;">
+                        <b-progress-bar :value="diskUsage.used">
+                        </b-progress-bar>
+                    </b-progress>
+                </label>
+
                 <form id="formFileUpload">
-                    <input type="text" name='path' :value="currentDir" hidden>
                     <input type="file" name="file" class="custom-file-input" id="inputUploadFile" required hidden
                         multiple v-on:change="uploadFile()">
                 </form>
                 <form id="formDirUpload">
-                    <input type="text" name='path' :value="currentDir" hidden>
                     <input type="file" name="file" id="inputUploadDir" webkitdirectory="" hidden required
                         v-on:change="uploadDir()">
                 </form>
+
             </div>
-            <div class="col-lg-2" style="margin-top: 10px;">
+            <div class="col-lg-2  col-sm-3" style="margin-top: 10px;">
                 <div class="custom-control custom-switch">
                     <input class="custom-control-input" type="checkbox" v-model="showAll" id="showAll"
                         v-on:click="toggleShowAll()">
                     <label class="custom-control-label" for="showAll">{{translate('displayAll')}}</label>
                 </div>
+                
             </div>
-
             <div class="col-lg-12">
-                <ul class="nav" style="background-color:whitesmoke;">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#" v-on:click='goHome()' v-b-tooltip.hover :title="translate('root')">
-                            <b-icon icon="house-door" ></b-icon>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" v-on:click='goBack()' v-b-tooltip.hover :title="translate('back')">
-                            <b-icon icon="arrow-left" ></b-icon>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" v-on:click='refreshChildren()' v-b-tooltip.hover :title="translate('refresh')">
-                            <b-icon icon="arrow-repeat"></b-icon>
-                        </a>
-                    </li>
-                    <li class="nav-item col-lg-10">
-                        <input type="text" class="form-control" v-model="currentDir">
-                    </li>
-                </ul>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#" v-on:click="goTo(-1)">
+                                <b-icon icon="house-door-fill"></b-icon>
+                            </a></li>
+                        <li class="breadcrumb-item active" v-for="(item, index) in pathItems">
+                            <a href="#" v-on:click="goTo(index)" v-if="index < pathItems.length -1">{{item.text}}</a>
+                            <span v-else>{{item.text}}</span>
+                        </li>
+                    </ol>
+                </nav>
+
             </div>
         </div>
 
         <div class="row">
-            <div class="col-1"> </div>
             <div class="col-lg-12 col-sm-12">
-                <table class="table table-hover table-sm table-responsive-lg">
+                <table class="table table-hover table-sm " style="width: 100%;">
                     <thead class="table-light">
                         <tr>
                             <th>{{translate('file')}} <b-icon icon="sort-alpha-down"></b-icon>
                             </th>
                             <th>{{translate('size')}} </th>
-                            <th>{{translate('modiryTime')}}</th>
+                            <th>{{translate('modifyTime')}}</th>
                             <th>{{translate('operation')}}</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in children" v-model="children">
                             <td v-on:click="clickPath(item)" v-if='item.type=="folder"'>
-                                <i class='fas fa-folder' style="color:orange"> </i> {{item.name}}
+                                <b-icon icon="folder-fill" variant="warning"></b-icon> {{item.name}}
                             </td>
                             <td v-else>
-                                <i class="fas fa-file" style="color:cadetblue"> </i>
+                                <b-icon icon="file-earmark-fill" variant="info"></b-icon>
                                 <a :href="getDownloadUrl(item)" target="_blank"> {{item.name}}</a>
                             </td>
                             <td>{{item.size}}</td>
@@ -141,7 +147,8 @@
                                 <span style="font-size: small;">{{item.modify_time}}</span>
                             </td>
                             <td>
-                                <button class="btn btn-sm btn-danger" v-on:click="deleteDir(item)" v-b-tooltip.hover :title="translate('delete')">
+                                <button class="btn btn-sm btn-danger" v-on:click="deleteDir(item)" v-b-tooltip.hover
+                                    :title="translate('delete')">
                                     <b-icon icon="trash"></b-icon>
                                 </button>
                                 <b-button class="btn btn-sm btn-warning" v-on:click="showRenameModal(item)"
@@ -149,11 +156,13 @@
                                     <b-icon icon="vr"></b-icon>
                                 </b-button>
                                 <b-button class="btn btn-sm btn-info" v-on:click="showQrcode(item)"
-                                    v-if="item.type!='folder'" v-b-modal.modal-filelink v-b-tooltip.hover :title="translate('displayDownloadQRCode')">
+                                    v-if="item.type!='folder'" v-b-modal.modal-filelink v-b-tooltip.hover
+                                    :title="translate('displayDownloadQRCode')">
                                     <b-icon icon="upc-scan"></b-icon>
                                 </b-button>
                                 <b-button class="btn btn-sm btn-info" v-if="item.editable==true"
-                                    v-on:click="showFileModal(item)" v-b-modal.modal-file v-b-tooltip.hover :title="translate('view')">
+                                    v-on:click="showFileModal(item)" v-b-modal.modal-file v-b-tooltip.hover
+                                    :title="translate('view')">
                                     <b-icon icon="eye"></b-icon>
                                 </b-button>
                             </td>
@@ -197,22 +206,17 @@
                 </b-modal>
                 <!-- Modal file upload -->
                 <b-modal id="modal-upload" size="xl" :title="translate('fileUploadProgress')">
-                    <table class="table table-hover table-sm table-responsive-lg">
-                        <tbody>
-                            <tr v-for="(item, index) in uploadQueue.tasks" v-model="uploadQueue">
-                                <td width='40%'>{{item.file}}</td>
-                                <td>
-                                    <div>
-                                        <b-progress :max="item.total" class="mb-3" variant="success">
-                                            <b-progress-bar :value="item.loaded"
-                                                :label="`${((item.loaded / item.total) * 100).toFixed(2)}%`">
-                                            </b-progress-bar>
-                                        </b-progress>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <ul class="list-group">
+                        <li class="list-group-item" v-for="(item, index) in uploadQueue.tasks">
+                            {{item.file}}
+                            <span class="badge badge-primary">{{ ((item.loaded / item.total) * 100).toFixed(2)
+                                }}%</span>
+                            <b-progress :max="item.total" class="mb-3" variant="success" style="height: 4px;">
+                                <b-progress-bar :value="item.loaded">
+                                </b-progress-bar>
+                            </b-progress>
+                        </li>
+                    </ul>
                 </b-modal>
             </div>
         </div>
