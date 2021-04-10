@@ -1,4 +1,0 @@
-paramiko
-qrcode
-pillow
-oslo_log
