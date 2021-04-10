@@ -8,8 +8,6 @@ from ui import dialogs
 from ui import widgets
 
 import functools
-# import toolkits
-
 
 LOG = logging.getLogger(__name__)
 
@@ -60,7 +58,7 @@ class BaseGridWindow(widgets.WidgetWithLayout):
 class MainWindow(BaseGridWindow):
 
     def __init__(self, width=800, height=10):
-        super().__init__(title="ToolKitsLight", width=width, height=height)
+        super().__init__(title="FluentUtils", width=width, height=height)
         self.setGeometry(0, 0, width, height)
         self.button_coutroller = []
 
