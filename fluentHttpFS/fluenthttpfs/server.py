@@ -4,8 +4,8 @@ import logging
 
 from wetool import net
 
-import manager
-import views
+from fluenthttpfs import manager
+from fluenthttpfs import views
 
 ROUTE = os.path.dirname(os.path.abspath(__file__))
 

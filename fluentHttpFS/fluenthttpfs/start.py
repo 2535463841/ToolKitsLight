@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 
-from server import HttpFsServer
+from fluenthttpfs.server import HttpFsServer
 
 
 ROUTE = os.path.dirname(os.path.abspath(__file__))

@@ -11,10 +11,8 @@ from flask import current_app
 from fluentcore import code
 from fluentcore import fs
 
-FS_CONTROLLER = None
-
-
 LOG = logging.getLogger(__name__)
+FS_CONTROLLER = None
 
 
 def get_json_response(data, status=200):
@@ -46,7 +44,7 @@ class QrcodeView(views.MethodView):
                 parse.urlencode({'path_list': file_path}, doseq=True),
                 None])
         else:
-            content =  parse.urlunparse([
+            content = parse.urlunparse([
                 'http', current_app.config['SERVER_NAME'], '', None,
                 None, None])
         qr.add_data(content)
@@ -147,9 +145,9 @@ class ActionView(views.MethodView):
                 'children': children,
                 'disk_usage': {
                     'used': usage.used, 'total': usage.total
-                    }
                 }
             }
+        }
 
     def _get_file_qrcode_link(self, path_dict, path_list):
         if path_dict['type'] == 'folder':
@@ -195,7 +193,8 @@ class ActionView(views.MethodView):
         params: {'path_list': [] , 'file': 'yy'}
         '''
         if not params.get('file'):
-            return get_json_response({'error': 'file name is none'}, status=400)
+            return get_json_response({'error': 'file name is none'},
+                                     status=400)
         file_path = params.get('path_list')[:]
         file_path.append(params.get('file'))
         content = FS_CONTROLLER.get_file_content(file_path)
@@ -217,7 +216,6 @@ class ActionView(views.MethodView):
         """
         params: {'path_list': [] , 'file': 'yy'}
         """
-        
 
 
 class FaviconView(views.MethodView):
@@ -226,10 +224,11 @@ class FaviconView(views.MethodView):
         return flask.send_from_directory(current_app.static_folder,
                                          'httpfs.png')
 
+
 class ServerView(views.MethodView):
 
     def get(self):
-        return { 'server': {
+        return {'server': {
             'name': 'FluentHttpFS',
             'version': '1.0'
             }
