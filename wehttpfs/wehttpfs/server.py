@@ -36,7 +36,6 @@ class HttpServer:
         self.app.jinja_env.variable_end_string = ']]'
         self.app.config['SERVER_NAME'] = '{}:{}'.format(self.host, self.port)
 
-
     def start(self, debug=False):
         self.pre_start()
         LOG.info('strarting server')
@@ -44,14 +43,15 @@ class HttpServer:
 
 
 class HttpFsServer(HttpServer):
+
     RULES = [
         (r'/favicon.ico', views.FaviconView.as_view('favicon')),
         (r'/', views.HomeView.as_view('home')),
         (r'/index.html', views.IndexView.as_view('index')),
-        (r'/dir', views.DirView.as_view('dir')),
         (r'/action', views.ActionView.as_view('action')),
         (r'/download/<file_name>', views.DownloadView.as_view('download')),
         (r'/qrcode', views.QrcodeView.as_view('qrcode')),
+        (r'/server', views.ServerView.as_view('server')),
     ]
 
     def __init__(self, host=None, port=80, fs_root=None):

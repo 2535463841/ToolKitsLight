@@ -17,7 +17,6 @@ def main():
     )
     LOG.addHandler(stream_hander)
 
-
     server = HttpFsServer(fs_root=sys.argv[1] if len(sys.argv) > 1 else None)
     server.start(debug=True)
 

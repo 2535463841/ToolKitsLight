@@ -2,6 +2,7 @@
 var app = new Vue({
     el: '#app',
     data: {
+        server: {name: '', version: ''},
         children: [],
         historyPath: [],
         linkQrcode: '',
@@ -15,7 +16,10 @@ var app = new Vue({
         uploadQueue: { completed: 0, tasks: [] },
         debug: false,
         pathItems: [],
-        diskUsage: {used: 0, total: 100}
+        diskUsage: {used: 0, total: 100},
+        searchPartern: '',
+        searchResult: [],
+        showPardir: false,
     },
     methods: {
         logDebug: function (msg, autoHideDelay = 1000, title = 'Debug') {
@@ -91,6 +95,7 @@ var app = new Vue({
         },
         goTo: function (clickIndex) {
             var self = this;
+            self.showPardir = false;
             let pathItems = self.getPathText(getItemsBefore(self.pathItems, clickIndex));
             this.wetoolFS.listDir(
                 pathItems, self.showAll,
@@ -110,10 +115,10 @@ var app = new Vue({
         },
         getDownloadUrl: function (item) {
             let urlParams = [];
-            this.pathItems.forEach(function(item) {
-                urlParams.push(`path_list=${item.text}`);
+            item.pardir.forEach(function(dir) {
+                urlParams.push(`path_list=${dir}`);
             });
-            return '/download/' + encodeURIComponent(item.name) + '?' + urlParams.join('&')
+            return `/download/${encodeURIComponent(item.name)}?${urlParams.join('&')}`
         },
         deleteDir: function (item) {
             var self = this;
@@ -229,7 +234,6 @@ var app = new Vue({
                     } else {
                         self.logError(`文件内容获取失败, ${status}, ${data.error}`, autoHideDelay = 5000)
                     }
-                    self.newDir = { name: '' }
                 },
                 function () {
                     self.logError('请求失败');
@@ -260,9 +264,42 @@ var app = new Vue({
                 unit = 'KB';
             }
             return `${displayUsed.toFixed(2)}${unit}/${displayTotal.toFixed(2)}${unit}`;
-        }
+        },
+        search: function(){
+            var self = this;
+            self.showPardir = true;
+            self.searchResult = [];
+            this.wetoolFS.search(
+                this.searchPartern,
+                function (status, data) {
+                    if (status == 200) {
+                        self.searchResult = data.dirs;
+                        self.children = data.dirs;
+                        console.log(self.searchResult)
+                    } else {
+                        self.logError(`搜索失败, ${status}, ${data.error}`, autoHideDelay = 5000)
+                    }
+                },
+                function () {
+                    self.logError('请求失败');
+                }
+            )
+        },
+        getServerInfo: function(){
+            var self = this;
+            this.wetoolFS.getServerInfo(
+                function(status, data){
+                    if (status == 200) {
+                        self.server = data.server;
+                    } else {
+                        self.logError(`请求失败, ${status}, ${data.error}`, autoHideDelay = 5000)
+                    }
+                }
+            );
+        },
     },
     created: function () {
+        this.getServerInfo();
         this.goTo(-1);
         // this.changeDirectory('', pushHistory = true);
     }

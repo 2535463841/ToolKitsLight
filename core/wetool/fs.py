@@ -1,5 +1,6 @@
 import os
-import shutil
+import fnmatch
+import zipfile
 
 
 def remove(path, recursive=False):
@@ -36,7 +37,8 @@ def directory_flat(top, set_index=True):
         src_file = os.path.join(src_path, file_name)
         if set_index:
             index += 1
-            dest_path = os.path.join(top, file_name_fmt.format(index, file_name))
+            dest_path = os.path.join(top,
+                                     file_name_fmt.format(index, file_name))
         else:
             dest_path = os.path.join(top, file_name)
         os.rename(src_file, dest_path)
@@ -45,3 +47,45 @@ def directory_flat(top, set_index=True):
         dir_path = os.path.join(top, d)
         if os.path.isdir(dir_path):
             remove(dir_path, recursive=True)
+
+
+def zip_path(path, name=None, zip_root=True):
+    """Compress directory use zipfile libriary
+    """
+    if not os.path.exists(path):
+        raise FileExistsError('path %s not exists' % path)
+
+    zip_name = name or (os.path.basename(path) + '.zip')
+    zip_path_list = []
+    def collect(directory):
+        # NOTE(zbw) Add the directory itself, make sure that the directory
+        # is still added to the compressed file when it is a file or empty.
+        zip_path_list.append(directory)
+        if os.path.isfile(directory):
+            return
+        for root, dirs, files in os.walk(directory):
+            for p in files + dirs:
+                zip_path_list.append(os.path.join(root, p))
+
+    if zip_root:
+        collect(path)
+    else:
+        children = os.listdir(path)
+        os.chdir(path)
+        for child in children:
+            collect(child)
+
+    with zipfile.ZipFile(zip_name, 'w') as zfile:
+        for f in zip_path_list:
+            zfile.write(f, f, zipfile.ZIP_DEFLATED)
+    return zip_name
+
+
+def find(path, pattern):
+    """Find files on specified path
+    """
+    matched_pathes = []
+    for root, dirs, files in os.walk(path):
+        for f in fnmatch.filter(dirs + files, pattern):
+            matched_pathes.append((root, f))
+    return matched_pathes

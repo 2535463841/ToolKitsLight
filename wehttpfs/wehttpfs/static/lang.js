@@ -23,9 +23,9 @@ var DIRECOTRY = {
 
     delete: { en: 'delete', zh: '删除' },
     rename: { en: 'rename', zh: '重命名' },
-
     view: { en: 'view', zh: '预览' },
     displayDownloadQRCode: { en: 'Display Download QR code ', zh: '显示下载二维码' },
+    download: {en: 'download', zh: '下载'},
 
     file: { en: 'file', zh: '文件' },
     size: { en: 'size', zh: '大小' },
@@ -43,7 +43,8 @@ var DIRECOTRY = {
 
     pleaseInput: { en: 'please input ...', zh: '请输入...' },
     createDirsTips: { en: 'Use / to create multi-level directories, such as foo/bar ', zh: '使用 / 创建多层目录，例如 foo/bar' },
-    diskUsage: {en: 'disk usage', zh: '磁盘空间'}
+    diskUsage: {en: 'disk usage', zh: '磁盘空间'},
+
 };
 var SUPPORT_LANG = ['en', 'zh'];
 

@@ -2,7 +2,6 @@ import os
 import stat
 import logging
 import mimetypes
-from urllib import parse
 
 from wetool import date
 from wetool import fs
@@ -28,15 +27,13 @@ class FSManager:
     def path_exists(self, path):
         return os.path.exists(self.get_abs_path(path))
 
-    def get_path_dict(self, file_name, path, pathstat):
-        params = {'file': file_name, 'path_list': path}
-        return {'name': file_name,
+    def get_path_dict(self, path):
+        pathstat = self.stat(path)
+        return {'name': os.path.basename(path[-1]),
                 'size': self.parse_size(pathstat.st_size),
                 'modify_time': date.parse_timestamp2str(
                     pathstat.st_mtime, '%Y/%m/%d %H:%M'),
                 'type': 'folder' if stat.S_ISDIR(pathstat.st_mode) else 'file',
-                'qrcode': '' if stat.S_ISDIR(pathstat.st_mode) else
-                '/qrcode?{0}'.format(parse.urlencode(params, doseq=True))
         }
 
     def editable(self, path):
@@ -44,7 +41,7 @@ class FSManager:
         if os.path.isfile(abs_path):
             t, _ = mimetypes.guess_type(abs_path)
             LOG.debug('path type is %s', t)
-            if t in ['text/plain']:
+            if t in ['text/plain', 'application/x-sh']:
                 return True
         return False
 
@@ -66,19 +63,24 @@ class FSManager:
         LOG.debug('delete dir: %s', path)
         fs.remove(abs_path, recursive=force)
 
+    def listdir(self, path):
+        return os.listdir(self.get_abs_path(path))
+
+    def stat(self, path):
+        return os.stat(self.get_abs_path(path))
+
+    def access(self, path, *args):
+        return os.access(self.get_abs_path(path), *args)
+
     def get_dirs(self, path, all=False):
-        children = []
-        # if not path:
-        #     return children
-        find_path = self.get_abs_path(path)
         dirs = []
-        for child in os.listdir(find_path):
-            child_path = os.path.join(find_path, child)
-            if not all and \
-                    (child.startswith('.') or not os.access(child_path, os.R_OK)):
+        for child in self.listdir(path):
+            child_path = path[:]
+            child_path.append(child)
+            if not all and (child.startswith('.') or
+                            not self.access(child_path, os.R_OK)):
                 continue
-            pathstat = os.stat(child_path)
-            path_dict = self.get_path_dict(child, path, pathstat)
+            path_dict = self.get_path_dict(child_path)
             path_dict['editable'] = self.editable(child_path)
             dirs.append(path_dict)
         return sorted(dirs, key=lambda k: k['type'], reverse=True)
@@ -117,7 +119,7 @@ class FSManager:
 
     def get_file_content(self, path):
         if not self.path_exists(path):
-            return FileNotFoundError('path not found: %s' % path)
+            return FileNotFoundError('path is not exists: %s' % path)
         if not self.is_file(path):
             return ValueError('path is not a file: %s' % path)
         abs_path = self.get_abs_path(path)
@@ -143,3 +145,13 @@ class FSManager:
 
     def disk_usage(self):
         return disk.usage(self.home)
+
+    def search(self, partern):
+        matched_pathes = []
+        for d, name in fs.find(self.home, partern):
+            path = d[len(self.home):].split('/')
+            path.append(name)
+            path_dict = self.get_path_dict(path)
+            path_dict['pardir'] = path[:-1]
+            matched_pathes.append(path_dict)
+        return matched_pathes

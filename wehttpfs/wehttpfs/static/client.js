@@ -72,7 +72,54 @@ class WetoolFS {
             formData.append('action', JSON.stringify(action));
             formData.append('file', file);
             this.postAction(formData, onload_callback, onerror_callback = onerror_callback, uploadCallback = uploadCallback);
-        }
+        };
+        this.search = function(partern, onload_callback, onerror_callback = null){
+            var action = {
+                name: 'search',
+                params: { partern: partern}
+            };
+            this.postAction(action, onload_callback, onerror_callback = onerror_callback);
+        };
+        this.get = function (body, onload_callback, onerror_callback = null, uploadCallback = null) {
+            var xhr = new XMLHttpRequest();
+            xhr.onload = function () {
+                var data = JSON.parse(xhr.responseText);
+                onload_callback(xhr.status, data);
+            };
+            xhr.onerror = function () {
+                if (onerror_callback != null) {
+                    onerror_callback();
+                }
+            };
+            xhr.open("POST", '/action', true);
+            if (body.constructor.name == 'FormData') {
+                xhr.upload.addEventListener('progress', function (e) {
+                    if (e.lengthComputable) {
+                        if (uploadCallback != null) {
+                            uploadCallback(e.loaded, e.total);
+                        }
+                    }
+                });
+
+                xhr.send(body);
+            } else {
+                xhr.send(JSON.stringify({ action: body }));
+            }
+        };
+        this.getServerInfo = function(onload_callback, onerror_callback = null){
+            var xhr = new XMLHttpRequest();
+            xhr.onload = function () {
+                var data = JSON.parse(xhr.responseText);
+                onload_callback(xhr.status, data);
+            };
+            xhr.onerror = function () {
+                if (onerror_callback != null) {
+                    onerror_callback();
+                }
+            };
+            xhr.open("GET", '/server', true);
+            xhr.send();
+        };
     }
 }
 

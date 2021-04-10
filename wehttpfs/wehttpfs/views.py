@@ -9,6 +9,7 @@ from flask import views
 from flask import current_app
 
 from wetool import code
+from wetool import fs
 
 FS_CONTROLLER = None
 
@@ -37,11 +38,12 @@ class QrcodeView(views.MethodView):
     def get(self):
         qr = code.QRCodeExtend(border=1)
         file_name = flask.request.args.get('file')
-        file_path = flask.request.args.getlist('path_list')
-        if file_name and file_path:
+        file_path = flask.request.args.getlist('path_list') or []
+        if file_name and file_path is not None:
             content = parse.urlunparse([
-                'http', current_app.config['SERVER_NAME'], 'download', None,
-                parse.urlencode({'file': file_name, 'path_list': file_path}),
+                'http', current_app.config['SERVER_NAME'],
+                'download/{0}'.format(file_name), None,
+                parse.urlencode({'path_list': file_path}, doseq=True),
                 None])
         else:
             content =  parse.urlunparse([
@@ -52,35 +54,34 @@ class QrcodeView(views.MethodView):
         return buffer.getvalue()
 
 
-class DirView(views.MethodView):
-
-    def get(self):
-        req_path = flask.request.args.get('path', '/')
-        if not req_path:
-            return flask.Response(json.dumps({'error': 'path is none'}),
-                                  status=400)
-        if not FS_CONTROLLER.path_exists(req_path):
-            return flask.Response(json.dumps({'error': 'path is not exists'}),
-                                  status=404)
-        resp_data = {'dir': {
-            'path': req_path, 'children': FS_CONTROLLER.get_dirs(req_path)}
-        }
-        return resp_data
-
-
 class DownloadView(views.MethodView):
 
     def get(self, file_name):
         req_path = flask.request.args.getlist('path_list')
+        req_path.append(file_name)
         if not FS_CONTROLLER.path_exists(req_path):
             return get_json_response({'error': 'path required is not exists'},
                                      status=404)
-        req_path.append(file_name)
-        abs_path = FS_CONTROLLER.get_abs_path(req_path)
+        if FS_CONTROLLER.is_file(req_path):
+            return self.download_file(req_path)
+        else:
+            return self.download_dir(req_path)
+
+    def download_file(self, file_path):
+        abs_path = FS_CONTROLLER.get_abs_path(file_path)
         directory = os.path.dirname(abs_path)
         LOG.debug('download file %s', abs_path)
         return flask.send_from_directory(
-            directory, file_name, as_attachment=False)
+            directory, os.path.basename(abs_path), as_attachment=False)
+
+    def download_dir(self, dir_path):
+        abs_path = FS_CONTROLLER.get_abs_path(dir_path)
+        zip_name = fs.zip_path(abs_path)
+        if not os.path.exists(zip_name):
+            return get_json_response({'error': 'zip failed'}, status=400)
+
+        LOG.debug('download dir %s', dir_path)
+        return flask.send_from_directory('./', zip_name, as_attachment=False)
 
 
 class ActionView(views.MethodView):
@@ -92,7 +93,9 @@ class ActionView(views.MethodView):
         'get_qrcode': 'get_qrcode',
         'rename_dir': 'rename_dir',
         'get_file': 'get_file',
-        'upload_file': 'upload_file'
+        'upload_file': 'upload_file',
+        'search': 'search',
+        'download': 'download',
     }
 
     def post(self):
@@ -133,17 +136,26 @@ class ActionView(views.MethodView):
             req_path = params.get('path_items')
         from wetool import system
         usage = FS_CONTROLLER.disk_usage()
-        
+        children = FS_CONTROLLER.get_dirs(req_path,
+                                          all=params.get('all', False))
+        for child in children:
+            child['qrcode'] = self._get_file_qrcode_link(child, req_path)
+            child['pardir'] = req_path
         return {
             'dir': {
                 'path': req_path,
-                'children': FS_CONTROLLER.get_dirs(
-                    req_path, all=params.get('all', False)),
+                'children': children,
                 'disk_usage': {
                     'used': usage.used, 'total': usage.total
                     }
                 }
             }
+
+    def _get_file_qrcode_link(self, path_dict, path_list):
+        if path_dict['type'] == 'folder':
+            return ''
+        params = {'file': path_dict['name'], 'path_list': path_list}
+        return '/qrcode?{0}'.format(parse.urlencode(params, doseq=True))
 
     def create_dir(self, params):
         req_path = params.get('path_items')
@@ -171,7 +183,7 @@ class ActionView(views.MethodView):
         return {'result': 'rename success'}
 
     def _check_params(self, params):
-        req_path = params.get('path') or params.get('path_items')
+        req_path = params.get('path') or params.get('path_list')
 
         if not req_path:
             raise ValueError('path is None')
@@ -180,20 +192,32 @@ class ActionView(views.MethodView):
 
     def get_file(self, params):
         '''
-        params: {'path': 'xxx', 'file': 'yy'}
+        params: {'path_list': [] , 'file': 'yy'}
         '''
-        self._check_params(params)
-
         if not params.get('file'):
             return get_json_response({'error': 'file name is none'}, status=400)
-
-        content = FS_CONTROLLER.get_file_content(
-            os.path.join(params.get('path'), params.get('file')),
-        )
+        file_path = params.get('path_list')[:]
+        file_path.append(params.get('file'))
+        content = FS_CONTROLLER.get_file_content(file_path)
         return {'file': {
             'name': params.get('file'),
             'content': content}
         }
+
+    def search(self, params):
+        """
+        params: {'partern': '*.py'}
+        """
+        matched_pathes = []
+        if params.get('partern'):
+            matched_pathes = FS_CONTROLLER.search(params.get('partern'))
+        return {'dirs': matched_pathes}
+
+    def download(self, params):
+        """
+        params: {'path_list': [] , 'file': 'yy'}
+        """
+        
 
 
 class FaviconView(views.MethodView):
@@ -201,3 +225,12 @@ class FaviconView(views.MethodView):
     def get(self):
         return flask.send_from_directory(current_app.static_folder,
                                          'httpfs.png')
+
+class ServerView(views.MethodView):
+
+    def get(self):
+        return { 'server': {
+            'name': 'FluentHttpFS',
+            'version': '1.0'
+            }
+        }
