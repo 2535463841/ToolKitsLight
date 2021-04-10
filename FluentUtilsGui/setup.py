@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 
-setup(name='wetoolgui',
+setup(name='fluentutilsgui',
       version='0.1',
-      description='python toolkits GUI',
+      description='fluent utils GUI',
       author='zbw',
       packages=find_packages())
