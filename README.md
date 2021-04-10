@@ -20,7 +20,7 @@ some simple tools
 
 支持文件上传，下载，二维码扫描下载等功能
 
-![image](https://user-images.githubusercontent.com/16282152/112730473-bcb2b380-8f6c-11eb-9a5c-d1e561a8e5cf.png)
+![image](https://user-images.githubusercontent.com/16282152/114277052-167ea780-9a5c-11eb-9112-c2fd6aaf2fde.png)
 
 ## UI
 
