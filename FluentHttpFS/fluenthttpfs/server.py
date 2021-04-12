@@ -1,15 +1,15 @@
 import os
 import flask
-import logging
 
 from wetool import net
 
+from fluentcore import log
 from fluenthttpfs import manager
 from fluenthttpfs import views
 
 ROUTE = os.path.dirname(os.path.abspath(__file__))
 
-LOG = logging.getLogger(__name__)
+LOG = log.getLogger(__name__)
 
 
 class HttpServer:

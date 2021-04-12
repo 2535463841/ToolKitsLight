@@ -1,8 +1,8 @@
 import os
 import stat
-import logging
 import mimetypes
 
+from fluentcore import log
 from fluentcore import date
 from fluentcore import fs
 from fluentcore.system import disk
@@ -10,7 +10,7 @@ from fluentcore.system import disk
 FS_CONTROLLER = None
 
 
-LOG = logging.getLogger(__name__)
+LOG = log.getLogger(__name__)
 
 
 class FSManager:

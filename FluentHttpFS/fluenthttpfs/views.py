@@ -1,17 +1,17 @@
 import os
 import json
 import flask
-import logging
 
 from urllib import parse
 
 from flask import views
 from flask import current_app
 
+from fluentcore import log
 from fluentcore import code
 from fluentcore import fs
 
-LOG = logging.getLogger(__name__)
+LOG = log.getLogger(__name__)
 FS_CONTROLLER = None
 
 
