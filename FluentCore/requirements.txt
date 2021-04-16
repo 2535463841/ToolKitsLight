@@ -1,4 +1,6 @@
+pytz
+psutil
 paramiko
 qrcode
 pillow
-oslo_log
+urllib3

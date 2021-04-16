@@ -32,19 +32,22 @@ parse_ts2str = parse_timestamp2str
 parse_str2ts = parse_str2timestamp
 
 
-def now(tz:str=None) -> datetime:
+def now(tz=None) -> datetime:
     timezone = pytz.timezone(tz) if tz else None
     return datetime.now(tz=timezone)
 
-def now_str(tz:str=None, date_format=None):
-    now = now(tz=tz)
+
+def now_str(tz=None, date_format=None):
+    date_now = now(tz=tz)
     if not date_format:
-        return now.isoformat()
+        return date_now.isoformat()
     else:
-        return now.strftime(date_format)
+        return date_now.strftime(date_format)
+
 
 def utc_now() -> datetime:
     return datetime.utcnow(tz='utc')
+
 
 def utc_now_str(date_format=None) -> float:
     return now_str(tz='utc', date_format=date_format)

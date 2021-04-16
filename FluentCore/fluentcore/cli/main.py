@@ -4,15 +4,15 @@ import socket
 import paramiko
 
 
-from hetool.common import cliparser
-from hetool import code
-from hetool.web import bingimg
-from hetool.pysshpass import ssh
+from fluentcore.common import cliparser
+from fluentcore.common import log
+from fluentcore import code
+from fluentcore.pysshpass import ssh
 
 
-LOG = logging.getLogger(__name__)
+LOG = log.getLogger(__name__)
 
-SUB_CLI_PARSER = cliparser.get_sub_cli_parser('hetool sub commands')
+SUB_CLI_PARSER = cliparser.get_sub_cli_parser('fluent utils sub commands')
 
 
 @cliparser.register_cli(SUB_CLI_PARSER)
@@ -30,44 +30,12 @@ class QrcodeCli(cliparser.CliBase):
         qr = code.QRCodeExtend(border=border)
         qr.add_data(args.string)
         for line in qr.parse_string_lines():
-            print(line) 
-
-
-@cliparser.register_cli(SUB_CLI_PARSER)
-class BingImageDonload(cliparser.CliBase):
-    SUPPORTED_RESOLUTION = [bingimg.BingImagDownloader.RESOLUTION_1080,
-                            bingimg.BingImagDownloader.RESOLUTION_UHD]
-    NAME = 'bingimgdownload'
-    ARGUMENTS = [
-        cliparser.Argument('page', type=int),
-        cliparser.Argument('-d', '--debug', action='store_true',
-                           help='show debug message'),
-        cliparser.Argument('-r', '--resolution', choices=SUPPORTED_RESOLUTION,
-                           help='the resolution fo image to dowload'),
-        cliparser.Argument('-w', '--workers', type=int, default=12,
-                           help='the num download workers, default is 12'),
-        cliparser.Argument('-t', '--timeout', type=int, default=300,
-                           help='timeout, default is 300s'),
-        cliparser.Argument('--dir',
-                           help='the directory to save'),
-        cliparser.Argument('-p', '--process', action='store_true',
-                           help='show process, default is False')
-    ]
-
-    def __call__(self, args):
-        downloader = bingimg.BingImagDownloader()
-        downloader.download(args.page,
-                            resolution=args.resolution,
-                            process=args.process,
-                            download_dir=args.dir,
-                            workers=args.workers,
-                            timeout=args.timeout
-                    )
+            print(line)
 
 
 base_arguments = [
     cliparser.Argument('-d', '--debug',
-                        action='store_true', help='show debug messages'),
+                       action='store_true', help='show debug messages'),
     cliparser.Argument('-T', '--get_pty',
                        action='store_true', help='if set, use pty'),
     cliparser.Argument('-t', '--timeout', type=int,
@@ -109,16 +77,16 @@ class SSHCmd(cliparser.CliBase):
         try:
             user, host, _ = get_connect_info(args.host)
             ssh_client = ssh.SSHClient(host, user, args.password,
-                                        port=args.port,
-                                        timeout=args.timeout)
+                                       port=args.port,
+                                       timeout=args.timeout)
             output = ssh_client.ssh(args.command)
             print(output)
         except socket.timeout:
             LOG.error('Connect to %s:%s timeout(%s seconds)',
-                    args.host, args.port, args.timeout)
+                      args.host, args.port, args.timeout)
         except paramiko.ssh_exception.AuthenticationException:
             LOG.error('Authentication %s with "%s" failed',
-                    user, args.password)
+                      user, args.password)
         except Exception as e:
             LOG.error(e)
 
@@ -140,15 +108,15 @@ class ScpGet(cliparser.CliBase):
             if not remote_path:
                 raise Exception('remote path is none')
             ssh_client = ssh.SSHClient(host, user, args.password,
-                                        port=args.port,
-                                        timeout=args.timeout)
+                                       port=args.port,
+                                       timeout=args.timeout)
             ssh_client.get(remote_path, args.local_path)
         except socket.timeout:
             LOG.error('Connect to %s:%s timeout(%s seconds)',
-                    args.host, args.port, args.timeout)
+                      args.host, args.port, args.timeout)
         except paramiko.ssh_exception.AuthenticationException:
             LOG.error('Authentication %s with "%s" failed',
-                    user, args.password)
+                      user, args.password)
         except Exception as e:
             LOG.error(e)
 
@@ -170,24 +138,28 @@ class ScpPut(cliparser.CliBase):
             ssh_client.put(args.local_file, remote_path)
         except socket.timeout:
             LOG.error('Connect to %s:%s timeout(%s seconds)',
-                    args.host, args.port, args.timeout)
+                      args.host, args.port, args.timeout)
         except paramiko.ssh_exception.AuthenticationException:
             LOG.error('Authentication %s with "%s" failed',
-                    user, args.password)
+                      user, args.password)
         except Exception as e:
             LOG.error(e)
 
 
 def main():
-    stream_handler = logging.StreamHandler()
-    stream_handler.setLevel(logging.DEBUG)
-    stream_handler.setFormatter(
-        logging.Formatter('%(asctime)s %(levelname)s: %(message)s')
-    )
-    LOG.addHandler(stream_handler)
-    LOG.setLevel(logging.INFO)
+
+    # stream_handler = logging.StreamHandler()
+    # stream_handler.setLevel(logging.DEBUG)
+    # stream_handler.setFormatter(
+    #     logging.Formatter('%(asctime)s %(levelname)s: %(message)s')
+    # )
+    # LOG.addHandler(stream_handler)
+    # LOG.setLevel(logging.INFO)
 
     args = SUB_CLI_PARSER.parse_args()
+    if args.debug:
+        LOG.setLevel(logging.DEBUG)
+        log.set_default(level=logging.DEBUG)
     if not hasattr(args, 'cli'):
         SUB_CLI_PARSER.print_usage()
     else:

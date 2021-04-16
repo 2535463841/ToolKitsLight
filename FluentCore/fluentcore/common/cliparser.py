@@ -1,5 +1,5 @@
-from abc import abstractmethod
 import argparse
+
 
 class Argument:
 
@@ -14,6 +14,7 @@ class CliBase:
 
     def __call__(self, args):
         raise NotImplementedError()
+
 
 class SubCliParser:
 
@@ -30,7 +31,7 @@ class SubCliParser:
             cli_parser.add_argument(*argument.args, **argument.kwargs)
         cli_parser.set_defaults(cli=cls)
         return cli_parser
-    
+
     def print_usage(self):
         self.parser.print_usage()
 
@@ -40,6 +41,7 @@ class SubCliParser:
 
 def get_sub_cli_parser(title):
     return SubCliParser(title)
+
 
 def register_cli(sub_cli_parser):
 
@@ -51,4 +53,3 @@ def register_cli(sub_cli_parser):
         return cls
 
     return wrapper
-

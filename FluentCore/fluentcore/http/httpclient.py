@@ -1,9 +1,10 @@
 import json
-import logging
 import ssl
 import http.client as httplib
 
-LOG = logging.getLogger(__name__)
+from fluentcore.common import log
+
+LOG = log.getLogger(__name__)
 
 
 class UnknownException(Exception):

@@ -38,9 +38,9 @@ def getLogger(name):
                 _DEFAULT_FILE, mode='a',
                 maxBytes=_DEFAULT_MAX_BYTES,
                 backupCount=_DEFAULT_BACKUP_COUNT)
+            handler.setLevel(logging.DEBUG)
         else:
             handler = logging.StreamHandler()
         handler.setFormatter(logging.Formatter(_DEFAULT_FORMAT))
         logger.addHandler(handler)
-        
     return logger

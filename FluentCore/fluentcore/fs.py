@@ -5,7 +5,7 @@ import zipfile
 
 def remove(path, recursive=False):
     """ remove file or dir
-    
+
     >>> os.makedirs('dir1/dir2/dir3')
     >>> with open('dir1/dir2/dir3/e.txt', 'w') as f:
     ...     f.write('hello, word')
@@ -57,6 +57,7 @@ def zip_path(path, name=None, zip_root=True):
 
     zip_name = name or (os.path.basename(path) + '.zip')
     zip_path_list = []
+
     def collect(directory):
         # NOTE(zbw) Add the directory itself, make sure that the directory
         # is still added to the compressed file when it is a file or empty.

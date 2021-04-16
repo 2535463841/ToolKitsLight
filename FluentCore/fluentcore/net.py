@@ -11,7 +11,7 @@ ScanResult = namedtuple('ScanResult', 'host port connectable')
 
 def port_scan(host, port_start=0, port_end=65535, threads=1, callback=None):
     """scan host ports between [port_start, port_end]
-    
+
     >>> port_scan('localhost',
     ...           port_start=8001,
     ...           port_end=8002,
@@ -25,11 +25,11 @@ def port_scan(host, port_start=0, port_end=65535, threads=1, callback=None):
         try:
             server.connect((host, port))
             return ScanResult(host, port, True)
-        except Exception as e:
+        except Exception:
             return ScanResult(host, port, False)
         finally:
             server.close()
-    
+
     with futures.ThreadPoolExecutor(threads) as executor:
         for port in range(port_start, port_end + 1):
             if callback:
@@ -49,6 +49,6 @@ def ping(host):
 def get_internal_ip():
     """Get the internal network IP address
     """
-    s = socket.socket(socket.AF_INET,socket.SOCK_DGRAM) 
-    s.connect(('8.8.8.8',80)) 
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(('8.8.8.8', 80))
     return s.getsockname()[0]

@@ -16,6 +16,7 @@ def md5sum_file(file_path, read_bytes=None):
     read_bytes or io.DEFAULT_BUFFER_SIZE
     sha1 = hashlib.sha1()
     md5sum = hashlib.md5()
+
     def read_from_fo(fo):
         data = fo.read(read_bytes)
         while data:
@@ -29,7 +30,7 @@ def md5sum_file(file_path, read_bytes=None):
     return (md5sum.hexdigest(), sha1.hexdigest())
 
 
-def convert_base(src_number,  src_base: int, target_base: int=10):
+def convert_base(src_number, src_base: int, target_base=10):
     """
     >>> convert_base('10', 10, target_base=2)
     '1010'
@@ -68,9 +69,9 @@ class QRCodeExtend(qrcode.QRCode):
     >>> lines = code.parse_string_lines()
     """
     char_map = {
-            True: {True: '█', False: '▀'},
-            False:{True: '▄', False: ' '}
-        }
+        True: {True: '█', False: '▀'},
+        False: {True: '▄', False: ' '}
+    }
 
     def parse_string_lines(self):
         """parse qrcode to string lines
@@ -90,7 +91,7 @@ class QRCodeExtend(qrcode.QRCode):
         return lines
 
     def parse_image_buffer(self):
-        """parse qrcode to BytesIO buffer 
+        """parse qrcode to BytesIO buffer
         """
         buffer = io.BytesIO()
         self.make_image().save(buffer)

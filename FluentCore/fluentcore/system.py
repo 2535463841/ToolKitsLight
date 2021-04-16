@@ -31,7 +31,7 @@ class cpu:
     @staticmethod
     def count():
         return cpu_count(psutil.cpu_count(logical=False),
-                psutil.cpu_count(logical=True))
+                         psutil.cpu_count(logical=True))
 
     @staticmethod
     def freq():
