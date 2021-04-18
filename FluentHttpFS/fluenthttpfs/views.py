@@ -7,7 +7,7 @@ from urllib import parse
 from flask import views
 from flask import current_app
 
-from fluentcore import log
+from fluentcore.common import log
 from fluentcore import code
 from fluentcore import fs
 
@@ -132,7 +132,6 @@ class ActionView(views.MethodView):
         req_path = params.get('path')
         if not req_path:
             req_path = params.get('path_items')
-        from wetool import system
         usage = FS_CONTROLLER.disk_usage()
         children = FS_CONTROLLER.get_dirs(req_path,
                                           all=params.get('all', False))

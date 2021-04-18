@@ -1,15 +1,15 @@
 import os
 import flask
+import logging
 
+from wetool import net
 
-from fluentcore.common import log
-from fluentcore import net
-from fluenthttpfs import manager
-from fluenthttpfs import views
+import manager
+import views
 
 ROUTE = os.path.dirname(os.path.abspath(__file__))
 
-LOG = log.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 class HttpServer:
@@ -42,25 +42,21 @@ class HttpServer:
         self.app.run(host=self.host, port=self.port, debug=debug)
 
 
-class HttpFsServer(HttpServer):
+class HorizonHttpServer(HttpServer):
 
     RULES = [
         (r'/favicon.ico', views.FaviconView.as_view('favicon')),
         (r'/', views.HomeView.as_view('home')),
         (r'/index.html', views.IndexView.as_view('index')),
-        (r'/action', views.ActionView.as_view('action')),
-        (r'/download/<file_name>', views.DownloadView.as_view('download')),
-        (r'/qrcode', views.QrcodeView.as_view('qrcode')),
+        (r'/actions', views.ActionView.as_view('action')),
         (r'/server', views.ServerView.as_view('server')),
     ]
 
-    def __init__(self, host=None, port=80, fs_root=None):
+    def __init__(self, host=None, port=80):
         super().__init__('FluentFS', host=host, port=port,
                          template_folder=os.path.join(ROUTE, 'templates'),
                          static_folder=os.path.join(ROUTE, 'static'))
-        self.fs_root = fs_root or './'
-        self.driver = manager.FSManager(self.fs_root)
 
     def pre_start(self):
         super().pre_start()
-        views.FS_CONTROLLER = manager.FSManager(self.fs_root)
+  

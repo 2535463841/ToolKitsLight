@@ -1,1 +1,1 @@
-recursive-include fluenthttpfs *.py *.rst *.scss *.js *.html *.conf *.jpg *.gif *.png
+recursive-include fluenthttpfs *.py *.rst *.scss *.js *.html *.conf *.jpg *.gif *.png *.css

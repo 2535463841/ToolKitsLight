@@ -2,7 +2,7 @@ import os
 import stat
 import mimetypes
 
-from fluentcore import log
+from fluentcore.common import log
 from fluentcore import date
 from fluentcore import fs
 from fluentcore.system import disk

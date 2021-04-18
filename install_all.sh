@@ -31,7 +31,7 @@ case ${osType} in
         ;;
 esac
 
-for component in FluentCore FluentBingImg
+for component in FluentCore FluentBingImg FluentHttpFS
 do
     cd ${component}
     echo "INFO:" "======= Install $component ======"

@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 
-from fluentcore import log
+from fluentcore.common import log
 from fluenthttpfs.server import HttpFsServer
 
 

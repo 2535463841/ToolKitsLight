@@ -1,0 +1,5 @@
+.bd-active {
+    border: 1px solid #eee;
+    border-left-width: .25rem;
+    border-left-color: red;
+}
