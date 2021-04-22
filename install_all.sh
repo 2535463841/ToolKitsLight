@@ -25,7 +25,7 @@ case ${osType} in
         apt-get install python-dev || exit 1
         ;;
     centos)
-        yum install -y python-dev || exit 1
+        yum install -y python-devel || exit 1
         ;;
     *)
         ;;
@@ -36,9 +36,16 @@ do
     cd ${component}
     echo "INFO:" "======= Install $component ======"
     if [[ -f requirements.txt ]]; then
-        echo pip3 install -r requirements.txt
+        echo "INFO:" "install requirements"
         pip3 install -r requirements.txt > /dev/null
     fi
-    python3 setup.py install > /dev/null || exit 1
+    echo "INFO:" "make package "
+    rm -rf dist
+    python3 setup.py sdist > /dev/null || exit 1
+    echo "INFO:" "install package"
+    pip3 install dist/*.tar.gz > /dev/null
+    if [[ $? -ne 0 ]]; then
+        echo "ERROR:" "install $compoent failed"
+    fi
     cd ../
 done

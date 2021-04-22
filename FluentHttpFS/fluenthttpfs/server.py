@@ -1,15 +1,15 @@
 import os
 import flask
+import logging
+import argparse
 
-
-from fluentcore.common import log
 from fluentcore import net
+from fluentcore.common import log
 from fluenthttpfs import manager
 from fluenthttpfs import views
 
-ROUTE = os.path.dirname(os.path.abspath(__file__))
-
 LOG = log.getLogger(__name__)
+ROUTE = os.path.dirname(os.path.abspath(__file__))
 
 
 class HttpServer:
@@ -64,3 +64,21 @@ class HttpFsServer(HttpServer):
     def pre_start(self):
         super().pre_start()
         views.FS_CONTROLLER = manager.FSManager(self.fs_root)
+
+
+def main():
+    parser = argparse.ArgumentParser('Fluent HTTP FS Command')
+    parser.add_argument('-d', '--debug', action='store_true',
+                        help="show debug message")
+    parser.add_argument('-P', '--path', help="the path of backend")
+    parser.add_argument('-p', '--port', type=int, default=80,
+                        help="the port of server, default 80")
+    args = parser.parse_args()
+    if args.debug:
+        log.set_default(level=logging.DEBUG)
+    server = HttpFsServer(fs_root=args.path, port=args.port)
+    server.start(debug=True)
+
+
+if __name__ == '__main__':
+    main()
