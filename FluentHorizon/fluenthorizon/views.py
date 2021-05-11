@@ -7,6 +7,7 @@ from urllib import parse
 
 from flask import views
 from flask import current_app
+from flask import session
 
 from fluentcore import code
 from fluentcore import fs
@@ -15,8 +16,9 @@ from openstack import client
 
 LOG = logging.getLogger(__name__)
 
-CLIENT = client.OpenstackClient.create_instance()
+OS_AUTH_URL = 'http://controller:35357/v3'
 
+CLIENTS = {}
 
 def get_json_response(data, status=200):
     return flask.Response(json.dumps(data), status=status)
@@ -25,12 +27,14 @@ def get_json_response(data, status=200):
 class HomeView(views.MethodView):
 
     def get(self):
-        return flask.redirect('/index.html')
+        return flask.redirect('/login')
 
 
 class IndexView(views.MethodView):
 
     def get(self):
+        if session.get('username') not in CLIENTS:
+            return flask.redirect('/login')
         return flask.render_template('index.html')
 
 
@@ -58,17 +62,14 @@ class QrcodeView(views.MethodView):
 class ActionView(views.MethodView):
 
     ACTIONS = {
-        'list_endpoints',
-        'list_services',
-        'list_users',
-        'list_projects',
+        'list_services', 'list_endpoints',
+        'list_users', 'list_projects',
         'get_endpoint',
 
-        'list_routers',
-        'list_networks',
-        'list_subnets',
-        'list_ports',
+        'list_routers', 'list_networks', 'list_subnets', 'list_ports',
         'list_agents',
+
+        'list_hypervisors', 'list_servers'
     }
 
     def post(self):
@@ -89,7 +90,6 @@ class ActionView(views.MethodView):
             return get_json_response({'error': msg}, status=400)
         
         action = json.loads(data).get('action')
-        print(action)
         name = action.get('name')
         params = action.get('params')
         LOG.debug('request action: %s, %s', name, params)
@@ -106,7 +106,7 @@ class ActionView(views.MethodView):
     def list_services(self, params):
         items = []
         columns = ['id', 'enabled', 'name', 'type']
-        for item in CLIENT.keystone.services.list():
+        for item in CLIENTS[session.get('username')].keystone.services.list():
             print(item)
             items.append(
                 {k: getattr(item, k) for k in columns}
@@ -116,7 +116,7 @@ class ActionView(views.MethodView):
     def list_endpoints(self, params):
         items = []
         columns = ['id', 'enabled', 'interface', 'region', 'url', 'service_id']
-        for item in CLIENT.keystone.endpoints.list():
+        for item in CLIENTS[session.get('username')].keystone.endpoints.list():
             items.append(
                 {k: getattr(item, k) for k in columns}
             )
@@ -125,7 +125,7 @@ class ActionView(views.MethodView):
     def list_projects(self, params):
         items = []
         columns = ['id', 'enabled', 'name']
-        for item in CLIENT.keystone.projects.list():
+        for item in CLIENTS[session.get('username')].keystone.projects.list():
             items.append(
                 {k: getattr(item, k) for k in columns}
             )
@@ -134,28 +134,52 @@ class ActionView(views.MethodView):
     def list_users(self, params):
         items = []
         columns = ['id', 'enabled', 'name']
-        for item in CLIENT.keystone.users.list():
+        for item in CLIENTS[session.get('username')].keystone.users.list():
             items.append(
                 {k: getattr(item, k) for k in columns}
             )
         return {'users': items}
 
     def list_networks(self, params):
-        # for network in CLIENT.neutron.list_networks():
-        #     print(CLIENT.neutron.list_networks())
-        return CLIENT.neutron.list_networks()
+        # for network in CLIENTS[session.get('username')].neutron.list_networks():
+        #     print(CLIENTS[session.get('username')].neutron.list_networks())
+        return CLIENTS[session.get('username')].neutron.list_networks()
 
     def list_routers(self, params):
-        return CLIENT.neutron.list_routers()
+        return CLIENTS[session.get('username')].neutron.list_routers()
 
     def list_subnets(self, params):
-        return CLIENT.neutron.list_subnets()
+        return CLIENTS[session.get('username')].neutron.list_subnets()
 
     def list_ports(self, params):
-        return CLIENT.neutron.list_ports()
+        return CLIENTS[session.get('username')].neutron.list_ports()
 
     def list_agents(self, params):
-        return CLIENT.neutron.list_agents()
+        return CLIENTS[session.get('username')].neutron.list_agents()
+
+    def _make_dict_list(self, objects, keys):
+        items = []
+        for item in objects:
+            items.append(
+                {k: getattr(item, k) for k in keys}
+            )
+        return items
+
+    def list_hypervisors(self, params):
+        return {
+            'hypervisors': self._make_dict_list(
+                CLIENTS[session.get('username')].nova.hypervisors.list(),
+                ['hypervisor_hostname', 'hypervisor_type', 'host_ip',
+                 'status', 'state', 'memory_mb_used', 'memory_mb',
+                 'vcpus_used', 'vcpus'])
+        }
+
+    def list_servers(self, params):
+        return {
+            'servers': self._make_dict_list(
+                CLIENTS[session.get('username')].nova.servers.list(),
+                ['id', 'name', 'status'])
+        }
 
 
 class FaviconView(views.MethodView):
@@ -174,3 +198,33 @@ class ServerView(views.MethodView):
             }
         }
 
+
+class LoginView(views.MethodView):
+    
+    def get(self):
+        return flask.render_template('login.html')
+    
+    def post(self):
+        data = flask.request.get_data()
+        if not data:
+            msg = 'login info not found'
+            return get_json_response({'error': msg}, status=400)
+        auth = json.loads(data).get('auth', {})
+        username = auth.get('username')
+        password = auth.get('password')
+        project_name = auth.get('project_name')
+        user_domain_name = auth.get('user_domain_name', 'Default')
+        project_domain_name = auth.get('project_domain_name', 'Default')
+        openstackclient = client.OpenstackClient(
+            OS_AUTH_URL,
+            username=username, password=password, project_name=project_name,
+            user_domain_name=user_domain_name,
+            project_domain_name=project_domain_name
+        )
+        try:
+            session['username'] = username
+            CLIENTS[username] = openstackclient
+            return get_json_response({'msg': 'login success'})
+        except Exception as e:
+            LOG.exception(e)
+            return get_json_response({'error': 'auth failed'}, status=400)

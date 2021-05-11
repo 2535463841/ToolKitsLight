@@ -23,7 +23,7 @@ class WetoolFS {
 
                 xhr.send(body);
             } else {
-                xhr.send(JSON.stringify({ action: body }));
+                xhr.send(JSON.stringify({action: body }));
             }
         };
         this.listDir = function (pathItems, showAll, onload_callback, onerror_callback = null) {

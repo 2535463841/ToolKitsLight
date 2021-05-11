@@ -24,6 +24,7 @@ class HttpServer:
         self.app = flask.Flask(name,
                                template_folder=self.template_folder,
                                static_folder=self.static_folder)
+        self.app.secret_key = "app secret"
         self._register_rules()
 
     def _register_rules(self):
@@ -47,9 +48,10 @@ class HorizonHttpServer(HttpServer):
     RULES = [
         (r'/favicon.ico', views.FaviconView.as_view('favicon')),
         (r'/', views.HomeView.as_view('home')),
-        (r'/index.html', views.IndexView.as_view('index')),
+        (r'/index', views.IndexView.as_view('index')),
         (r'/actions', views.ActionView.as_view('action')),
         (r'/server', views.ServerView.as_view('server')),
+        (r'/login', views.LoginView.as_view('login')),
     ]
 
     def __init__(self, host=None, port=80):

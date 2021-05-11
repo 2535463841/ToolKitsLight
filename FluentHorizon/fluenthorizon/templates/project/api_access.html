@@ -1,0 +1,29 @@
+<h3>API Access</h3>
+
+
+
+<div class="btn-toolbar justify-content-between" role="toolbar">
+    <div class="btn-group" role="group" aria-label="First group"> </div>
+    <div class="input-group-prepend">
+        <button type="button" class="btn btn-sm btn-outline-secondary">
+            <b-icon icon='eye-fill'></b-icon>{{translate('viewCredentials')}}
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary">{{translate('downloadOpenstackRcFile')}}</button>
+    </div>
+</div>
+
+
+<table class="table table-hover table-sm " style="width: 100%;">
+    <thead class="table-light">
+        <tr>
+            <th>{{translate('service')}}</th>
+            <th>{{translate('serviceEndpoint')}} </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr v-for="(item, index) in resources.service" v-model="resources.services">
+            <td>{{item.name}}</td>
+            <td>{{item.endpoint}}</td>
+        </tr>
+    </tbody>
+</table>

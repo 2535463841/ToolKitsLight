@@ -45,6 +45,11 @@ var DIRECOTRY = {
     createDirsTips: { en: 'Use / to create multi-level directories, such as foo/bar ', zh: '使用 / 创建多层目录，例如 foo/bar' },
     diskUsage: {en: 'disk usage', zh: '磁盘空间'},
 
+    oldPassword: {en: 'old password', zh: '旧密码'},
+    newPassword: {en: 'new password', zh: '新密码'},
+    pleaseInputOldPassword: {en: 'please input old password', zh: '请输入旧密码'},
+    pleaseInputNewPassword: {en: 'please input new password', zh: '请输入新密码'},
+
 };
 var SUPPORT_LANG = ['en', 'zh'];
 
@@ -83,3 +88,4 @@ var translate = function (content) {
     }
     return DIRECOTRY[content][USE_LANG];
 }
+

@@ -1,4 +1,5 @@
 
+
 var app = new Vue({
     el: '#app',
     data: {
@@ -20,13 +21,24 @@ var app = new Vue({
         searchPartern: '',
         searchResult: [],
         showPardir: false,
-        display: 'ports',
-
+        timeZones: ['UTC', 'US', 'ZH'],
+        tzSelected: 'UTC',
+        itemNumsList: [10, 20, 30, 40, 50],
+        logLinesList: [50, 60, 80, 100],
+        itemsSelected: 30,
+        linesSelected: 50,
+        intervalId: null,
+        failedTimes: 0,
+        usageStart: 0,
+        usageEnd: 0,
+        display: 'overreview',
         menuTree: {
+            project: ['api_access'],
             identity: ['projects', 'users', 'services', 'endpoints'],
-            compute: ['instances', 'flavors'],
+            compute: ['overreview', 'hypervisors', 'instances', 'flavors'],
             networking: ['routers', 'networks', 'subnets', 'ports'],
-            image: ['images']
+            image: ['images'],
+            settings: ['userSettings', 'changePassword'],
         },
         users: [],
         projects: [],
@@ -41,6 +53,10 @@ var app = new Vue({
         resources: {
             'ports': [],
             'routers': [],
+            'hypervisors': []
+        },
+        usage: {
+            memory: {used: 0, total: 0},
         },
 
     },
@@ -268,26 +284,102 @@ var app = new Vue({
                 function(status, data){
                     if(status == 200){
                         self.resources[resource_name] = data[resource_name];
-                        console.log(self.resources);
+                        if (resource_name == 'hypervisors'){
+                            self.usage['memory'] = {used: 0, total: 0}
+                            self.resources[resource_name].forEach(function(item) {
+                                self.usage['memory']['used'] += item.memory_mb_used;
+                                self.usage['memory']['total'] += item.memory_mb;
+                            });
+                            self.showChartPie(
+                                'chartMemUsed', 'Mem Used',
+                                [
+                                    {name: 'Used', value: self.usage['memory']['used']},
+                                    {name: 'Free', value: self.usage['memory']['total'] - self.usage['memory']['used']},
+                                ]
+                            );
+                        }
                     }else{
                         self.logError(`list ${resource_name} failed,  ${status}, ${data.error}`)
+                        self.failedTimes += 1;
                     }
+                    // self.draw();
                 }
             )
         },
-    },
-    created: function () {
-        this.getServerInfo();
-        this.listUsers();
-        this.listProjects();
-        this.listServices();
-        this.listEndpoints();
-        this.listResource('networks');
-        this.listResource('subnets');
-        // this.listResource('routers')
-        this.listResource('ports');
+        showChartPie: function(eleId, title, data){
+            var chart = echarts.init(document.getElementById(eleId));
+            chart.setOption({
+                title: {text: title, left: 'center'},
+                tooltip: {trigger: 'item'},
+                series: [{
+                    name: title, type: 'pie', radius: '50%',
+                    color:['rgb(215, 102, 98)', 'rgb(206, 206, 206)'],
+                    data: data,
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'}
+                    }},
+                ]
+            });
+        },
+        draw: function(){
+            this.showChartPie(
+                'chartMemUsed', 'Mem Used',
+                [
+                    {value: 512, name: 'Used'},
+                    {value: 1024, name: 'Total'},
+                ]);
+            this.showChartPie(
+                'chartCpuUsed', 'Cpu Used',
+                [
+                    {value: 0.3, name: 'Used'},
+                    {value: 1, name: 'Total'},
+                ]);
+            this.showChartPie(
+                'chartDiskUsed', 'Disk Used',
+                [
+                    {value: 1000, name: 'Used'},
+                    {value: 1000000000, name: 'Total'},
+                ]);
 
-        // this.goTo(-1);
-        // this.changeDirectory('', pushHistory = true);
+            var data = [
+                {value: 1000, name: 'Used'},
+                {value: 10000, name: 'Total'},
+            ];
+            this.showChartPie('chartInstance', 'Instances', data);
+            this.showChartPie('chartFloatingIp', 'Floating IPs', data);
+            this.showChartPie('chartSecurityGroup', 'SecurityGroups', data);
+            this.showChartPie('chartVolume', 'Volumes', data);
+            this.showChartPie('chartVolumeStorage', 'Volume Storage', data);
+
+        }
+    },
+    mounted: function() {
+        // this.getServerInfo();
+        // this.listUsers();
+        // this.listProjects();
+        // this.listServices();
+        // this.listEndpoints();
+        // this.listResource('networks');
+        // this.listResource('subnets');
+        // this.listResource('routers')
+        // this.listResource('ports');
+        this.listResource('hypervisors');
+        var self = this;
+        self.intervalId = setInterval(function(){
+                self.listResource('hypervisors');
+                if(self.failedTimes >= 3){
+                    self.logError(`list resources failed ${self.failedTimes}, stop ${self.intervalId}`);
+                    clearInterval(self.intervalId);
+                }
+            }, 5000
+        );
+            // this.goTo(-1);
+            // this.changeDirectory('', pushHistory = true);
+                
+        // Vue.prototype.$echarts = echarts;
+        this.draw();
     }
 });

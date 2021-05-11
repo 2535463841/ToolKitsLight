@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>dashboard</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+
+    <!-- Vue -->
+    <script src="/static/vue/vue.min.js"></script>
+
+    <!-- bootstrap css -->
+    <link rel="stylesheet" href="/static/bootstrap-4.6.0/css/bootstrap.min.css">
+
+    <!-- fontawesome -->
+    <link rel="stylesheet" href="/static/fontawesome/css/fontawesome.min.css">
+    <script src="/static/fontawesome/js/all.min.js"></script>
+
+    <!-- bootstrap-vue  -->
+    <link rel="stylesheet" href="/static/bootstrap-vue/bootstrap-vue.min.css">
+    <script src="/static/bootstrap-vue/bootstrap-vue.min.js"></script>
+    <script src="/static/bootstrap-vue/bootstrap-vue-icons.min.js"></script>
+
+    <link rel="stylesheet" href="/static/app.css">
+
+</head>
+
+<body>
+    <div id='app' class="container">
+        <br>
+        <div class="row justify-content-md-center" >
+            <div class="col-lg-5 border border-info">
+                <form>
+                    <br>
+                    <div class="form-group row">
+                      <label for="inputEmail3" class="col-sm-3 col-form-label">Username</label>
+                      <div class="col-sm-9">
+                        <input type="text" class="form-control" id="inputEmail3" v-model="auth.username">
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-3 col-form-label">Password</label>
+                        <div class="col-sm-9">
+                          <input type="password" class="form-control" id="inputEmail3" v-model="auth.password">
+                        </div>
+                      </div>
+                    <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-3 col-form-label">ProjectName</label>
+                        <div class="col-sm-9">
+                          <input type="text" class="form-control" id="inputEmail3" v-model="auth.projectName">
+                        </div>
+                      </div>
+                    <div class="form-group row">
+                      <label for="inputPassword3" class="col-sm-3 col-form-label">UserDoamin</label>
+                      <div class="col-sm-9">
+                        <input type="text" class="form-control" v-model="auth.userDomain">
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="inputPassword3" class="col-sm-3 col-form-label">ProjectDoamin</label>
+                        <div class="col-sm-9">
+                          <input type="text" class="form-control" id="inputPassword3" v-model="auth.projectDomain">
+                        </div>
+                      </div>
+
+                    <div class="form-group row">
+                      <div class="col-sm-10 text-center">
+                        <button type="button" class="btn btn-primary" v-on:click="login">Sign in</button>
+                      </div>
+                    </div>
+                  </form>
+            </div>
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="/static/lang.js"></script>
+    <script type="text/javascript">
+        var app = new Vue({
+            el: '#app',
+            data: {
+                auth: {
+                    username: 'admin',
+                    password: 'admin1234',
+                    projectName: 'admin',
+                    userDomain: 'Default',
+                    projectDomain: 'Default',
+                }
+            },
+            methods: {
+                logInfo: function (msg, autoHideDelay = 1000, title = 'Info') {
+                    this.$bvToast.toast(msg, {
+                        title: title,
+                        variant: 'success',
+                        autoHideDelay: autoHideDelay
+                    });
+                },
+                logWarn: function (msg, autoHideDelay = 1000, title = 'Warn') {
+                    this.$bvToast.toast(msg, {
+                        title: title,
+                        variant: 'warning',
+                        autoHideDelay: autoHideDelay
+                    });
+                },
+                login: function(){
+                    this.logInfo('loging ...')
+                    var xhr = new XMLHttpRequest();
+                    var self = this;
+                    xhr.onload = function () {
+                        var data = JSON.parse(xhr.responseText);
+                        self.logInfo('login success');
+                        window.location.href = "/index";
+                    };
+                    xhr.onerror = function () {
+                        self.logInfo('login failed');
+                    };
+                    xhr.open("POST", '/login', true);
+                    xhr.send(JSON.stringify({auth: self.auth}));
+                }
+            }
+        });
+    </script>
+
+</body>
+
+</html>

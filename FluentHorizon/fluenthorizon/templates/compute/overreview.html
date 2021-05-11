@@ -1,0 +1,76 @@
+<h2>Overeview</h2>
+<hr>
+<h3>Limit Sumary</h3>
+
+<div class="row">
+    <div class="col-lg-2 col-sm-3">
+        <div id="chartMemUsed" style="width: 100%; height: 200px"></div>
+        instances
+    </div>
+    <div class="col-lg-2 col-sm-3">
+        <div id="chartCpuUsed" style="width: 100%; height: 200px"></div>
+        vcpus
+    </div>
+    <div class="col-lg-2 col-sm-3">
+        <div id="chartDiskUsed" style="width: 100%; height: 200px"></div>
+        RAM
+    </div>
+    <div class="col-lg-2 col-sm-3">
+        <div id="chartDiskUsed" style="width: 100%; height: 200px"></div>
+        Floating Ips
+    </div>
+    <div class="col-lg-2 col-sm-3">
+        <div id="chartDiskUsed" style="width: 100%; height: 200px"></div>
+        Security Groups
+    </div>
+</div>
+
+<h3>Usage Sumary</h3>
+select a period of time to query its usage:
+<div class="row">
+    <div class="col-lg-3 col-sm-3">
+        <b-form-datepicker v-model="usageStart" class="mb-2"></b-form-datepicker>
+    </div>
+    to
+    <div class="col-lg-3 col-sm-3">
+        <b-form-datepicker v-model="usageEnd" class="mb-2"></b-form-datepicker>
+    </div>
+    <div class="col-lg-1 col-sm-3">
+        <button class="btn btn-primary">Submit</button>
+    </div>
+    
+    <div class="col-lg-3 col-sm-3">
+        <table class="table table-borderless table-sm " style="width: 100%;">
+            <tbody>
+                <tr><td><strong>Active Instances</strong>   </td><td>xx</td></tr>
+                <tr><td><strong>Active RAM</strong></td><td>xx</td></tr>
+                <tr><td><strong>This Period's VCPU-Hours</strong> </td><td>xx</td></tr>
+                <tr><td><strong>This Period's GB-Hours</strong> </td><td>xx</td></tr>
+                <tr><td><strong>This Period's RAM-Hours</strong> </td><td>xx</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h4>Usage</h4>
+
+<table class="table table-hover table-sm " style="width: 100%;">
+    <thead class="table-light">
+        <tr>
+            <th>{{translate('Instance')}}</th>
+            <th>{{translate('VCPUs')}} </th>
+            <th>{{translate('RAM')}}</th>
+            <th>{{translate('Disk')}}</th>
+            <th>{{translate('timeSinceCreated')}}</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr v-for="(item, index) in resources.hypervisors" v-model="resources.hypervisors">
+            <td>{{item.hypervisor_hostname}}</td>
+            <td>{{item.host_ip}}</td>
+            <td>{{item.hypervisor_type}}</td>
+            <td>{{item.memory_mb_used}}/{{item.memory_mb}}</td>
+            <td>{{item.memory_mb_used}}/{{item.memory_mb}}</td>
+        </tr>
+    </tbody>
+</table>
