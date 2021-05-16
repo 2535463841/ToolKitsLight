@@ -2,10 +2,13 @@ import os
 import flask
 import logging
 
+from flask import session
+
 from wetool import net
 
 import manager
 import views
+
 
 ROUTE = os.path.dirname(os.path.abspath(__file__))
 
@@ -26,6 +29,13 @@ class HttpServer:
                                static_folder=self.static_folder)
         self.app.secret_key = "app secret"
         self._register_rules()
+        
+        @self.app.before_request
+        def register_before_request():
+            self.before_request()
+
+    def before_request(self):
+        pass
 
     def _register_rules(self):
         for url, view_func in self.RULES:
@@ -61,4 +71,7 @@ class HorizonHttpServer(HttpServer):
 
     def pre_start(self):
         super().pre_start()
-  
+
+    def before_request(self):
+        if not session.get('auth'):
+            return flask.redirect('/login')

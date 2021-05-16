@@ -1,0 +1,120 @@
+<h3>{{translate('instances')}}</h3>
+<hr>
+
+<div class="btn-toolbar mb-3 float-right" role="toolbar" aria-label="Toolbar with button groups">
+    <div class="btn-group mr-1" role="group" aria-label="First group">
+        <b-form-select class="mb-1 mr-sm-1 mb-sm-0" :value="0"
+            :options="[{text: 'Instance =', value: 0}, {text: 'Image =', value: 1},'Address','Flavor =', 'keypair =', 'status =', 'az =', 'vcpus =' ]" ></b-form-select>
+        <input type="text" class="form-control" placeholder="Input group example"
+            aria-label="Input group example" aria-describedby="btnGroupAddon">
+    </div>
+
+    <div class="btn-group mr-2" role="group" aria-label="First group">
+      <button type="button" class="btn btn-outline-secondary">{{translate('filter')}}</button>
+    </div>
+    <div class="btn-group mr-2" role="group" aria-label="First group">
+        <button type="button" class="btn btn-outline-secondary">
+            <b-icon icon="cloud-plus-fill"></b-icon> {{translate('createInstance')}}</button>
+    </div>
+    <div class="btn-group mr-2" role="group" aria-label="First group">
+        <button type="button" class="btn btn-danger">
+            <b-icon icon="trash-fill"></b-icon> {{translate('deleteInstance')}}</button>
+    </div>
+    <div class="btn-group mr-2 btn-outline-secondary" role="group" aria-label="First group">
+        <b-dropdown id="dropdown-1" :text="translate('moreAction')">
+            <b-dropdown-item>{{translate('startInstance')}}</b-dropdown-item>
+            <b-dropdown-item variant="danger">{{translate('stopInstance')}}</b-dropdown-item>
+            <b-dropdown-item variant="danger">{{translate('softRestrtInstance')}}</b-dropdown-item>
+            <!-- <b-dropdown-divider></b-dropdown-divider> -->
+          </b-dropdown>
+    </div>
+</div>
+
+<table class="table table-hover table-sm table-striped" style="width: 100%;">
+    <thead class="table-light">
+        <tr>
+            <th>{{translate('name')}}</th>
+            <th>{{translate('image')}} </th>
+            <th>{{translate('ipAddress')}} </th>
+            <th>{{translate('flavor')}} </th>
+            <th>{{translate('keyName')}} </th>
+            <th>{{translate('status')}} </th>
+            <th>{{translate('availlableZone')}} </th>
+            <th>{{translate('task')}} </th>
+            <th>{{translate('power')}} </th>
+            <th>{{translate('created')}} </th>
+            <th>{{translate('action')}} </th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr v-for="(item, index) in resources.servers" v-model="resources.servers">
+            <td><a href="">{{item.name}}</a></td>
+            <td><a href="">{{item.image.name}}</a></td>
+            <td>
+                <ul v-for="(netArray, netIndex) in item.addresses">
+                    <li class="list-unstyled" v-for="(addrItem, addrIndex) in netArray">
+                        {{addrItem.addr}}
+                    </li>
+                </ul>
+            </td>
+            <td><a href="">{{item.flavor.name}}</a></td>
+            <td>{{item.key_name}}</td>
+            <td>{{item.status}}</td>
+            <td>{{item['OS-EXT-AZ:availability_zone']}}</td>
+            <td>{{item['OS-EXT-STS:task_state']}}</td>
+            <td>
+                <b-icon icon="power" class="rounded-circle"
+                    v-bind:class="{'text-success': item['OS-EXT-STS:power_state']==1, 'text-danger': item['OS-EXT-STS:power_state']!=1}">
+                </b-icon>
+            </td>
+            <td>{{item.created}}</td>
+            <td>
+                <b-dropdown split id="dropdown-1" :text="translate('createSnapshot')">
+                    <b-dropdown-item>{{translate('associateFloatingIp')}}</b-dropdown-item>
+                    <b-dropdown-item>{{translate('attachInterface')}}</b-dropdown-item>
+                    <b-dropdown-item>{{translate('detachIntance')}}</b-dropdown-item>
+                    <b-dropdown-item>{{translate('editInstance')}}</b-dropdown-item>
+                    <b-dropdown-item>{{translate('updateMetadata')}}</b-dropdown-item>
+                    <b-dropdown-item>{{translate('editSecurityGroup')}}</b-dropdown-item>
+                    <b-dropdown-item>{{translate('console')}}</b-dropdown-item>
+                    <b-dropdown-item>{{translate('pauseInstance')}}</b-dropdown-item>
+                    <b-dropdown-item>{{translate('suspendInstance')}}</b-dropdown-item>
+                    <b-dropdown-item>{{translate('shelveInstance')}}</b-dropdown-item>
+                    <b-dropdown-item variant="danger">{{translate('resizeInstance')}}</b-dropdown-item>
+                    <b-dropdown-item >{{translate('lockInstance')}}</b-dropdown-item>
+                    <b-dropdown-item variant="danger">{{translate('softRestart')}}</b-dropdown-item>
+                    <b-dropdown-item variant="danger">{{translate('hardRestart')}}</b-dropdown-item>
+                    <b-dropdown-item variant="danger">{{translate('stopInstance')}}</b-dropdown-item>
+                    <b-dropdown-item variant="danger">{{translate('rebuidInstance')}}</b-dropdown-item>
+                    <b-dropdown-item variant="danger">{{translate('deleteInstance')}}</b-dropdown-item>
+                    <!-- <b-dropdown-divider></b-dropdown-divider> -->
+                </b-dropdown>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- Modal file content -->
+<b-modal id="modal-auth" size="lg" :title="translate('userCredentialDetail')">
+    <form>
+        <div class="form-group">
+          <label >{{translate('username')}}</label>
+          <input type="text" class="form-control" v-model="auth.username" disabled>
+        </div>
+        <div class="form-group">
+          <label >{{translate('projectName')}}</label>
+          <input type="text" class="form-control" v-model="auth.projectName" disabled> 
+        </div>
+        <div class="form-group">
+            <label >{{translate('projectId')}}</label>
+            <input type="text" class="form-control" v-model="auth.projectId" disabled>
+        </div>
+        <div class="form-group">
+            <label >{{translate('authUrl')}}</label>
+            <input type="text" class="form-control" v-model="auth.authUrl" disabled>
+        </div>
+
+      </form>
+</b-modal>
+

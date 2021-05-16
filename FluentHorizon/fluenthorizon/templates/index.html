@@ -67,9 +67,9 @@
 
                             <b-nav-item-dropdown right>
                                 <!-- Using 'button-content' slot -->
-                                <template #button-content><em>
-                                    <b-icon icon="person-fill"></b-icon>
-                                    {{translate('user')}}</em></template>
+                                <template #button-content>
+                                    <em><b-icon icon="person-fill"></b-icon>{{server.username}}</em>
+                                </template>
                                 <b-dropdown-item href="#">{{translate('setting')}}</b-dropdown-item>
                                 <b-dropdown-item href="#">{{translate('signOut')}}</b-dropdown-item>
                             </b-nav-item-dropdown>
@@ -84,12 +84,12 @@
                 <div class="accordion" role="tablist">
                     <b-card no-body class="mb-1" v-for="(children, menu) in menuTree">
                         <b-card-header header-tag="header" class="p-1" role="tab" v-b-toggle="menu">
-                            <h5>{{menu}}</h5>
+                            <h5>{{translate(menu)}}</h5>
                         </b-card-header>
                         <b-collapse :id="menu" visible accordion="my-accordion" role="tabpanel">
                             <ul class="nav flex-column text-right" v-on:click="changeDisplay(item)" v-for="(item, index) in children">
-                                <li class="nav-item bd-callout" :class="{ 'bd-active': display==item }">
-                                  <a class="nav-link active" href="#">{{item}}</a>
+                                <li class="nav-item bd-callout" :class="{'bd-active': display==item }">
+                                  <a class="nav-link active" href="#">{{translate(item)}}</a>
                                 </li>
                             </ul>
 
@@ -106,17 +106,21 @@
                 
                 <div v-if="display=='overreview'"> {% include 'compute/overreview.html'%} </div>
                 <div v-if="display=='hypervisors'"> {% include 'compute/hypervisors.html'%} </div>
+                <div v-if="display=='instances'"> {% include 'compute/instances.html'%} </div>
+                <div v-if="display=='images'"> {% include 'compute/images.html'%} </div>
+                <div v-if="display=='flavors'"> {% include 'compute/flavors.html'%} </div>
+                <div v-if="display=='keypairs'"> {% include 'compute/keypairs.html'%} </div>
 
                 <div v-if="display=='projects'"> {% include 'identity/projects.html'%} </div>
                 <div v-if="display=='users'"> {% include 'identity/users.html'%} </div>
                 <div v-if="display=='services'"> {% include 'identity/services.html'%} </div>
                 <div v-if="display=='endpoints'"> {% include 'identity/endpoints.html'%} </div>
-                
+
                 <div v-if="display=='networks'"> {% include 'networking/networks.html'%} </div>
                 <div v-if="display=='routers'"> {% include 'networking/routers.html'%} </div>
                 <div v-if="display=='subnets'"> {% include 'networking/subnets.html'%} </div>
                 <div v-if="display=='ports'"> {% include 'networking/ports.html'%} </div>
-                
+
                 <div v-if="display=='userSettings'"> {% include 'settings/user_settings.html' %} </div>
                 <div v-if="display=='changePassword'"> {% include 'settings/change_password.html' %} </div>
 

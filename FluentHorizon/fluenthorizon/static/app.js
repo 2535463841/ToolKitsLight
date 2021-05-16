@@ -35,9 +35,8 @@ var app = new Vue({
         menuTree: {
             project: ['api_access'],
             identity: ['projects', 'users', 'services', 'endpoints'],
-            compute: ['overreview', 'hypervisors', 'instances', 'flavors'],
+            compute: ['overreview', 'instances', 'hypervisors', 'images', 'flavors'],
             networking: ['routers', 'networks', 'subnets', 'ports'],
-            image: ['images'],
             settings: ['userSettings', 'changePassword'],
         },
         users: [],
@@ -51,13 +50,14 @@ var app = new Vue({
         ports: [],
         agents: [],
         resources: {
-            'ports': [],
-            'routers': [],
-            'hypervisors': []
+            ports: [], routers: [],
+            hypervisors: [],
+            servers: [], images: [], flavors: [], keypairs: []
         },
         usage: {
             memory: {used: 0, total: 0},
         },
+        auth: {}
 
     },
     methods: {
@@ -324,6 +324,28 @@ var app = new Vue({
                 ]
             });
         },
+        getAuthInfo: function(){
+            var self = this;
+            this.wetoolFS.postAction(
+                {'name': 'get_auth_info'},
+                function(status, data){
+                    if(status == 200){
+                        self.auth = data.auth;
+                    }else{
+                        self.logError('get auth info failed')
+                    }
+                }
+            );
+        },
+        getPublicEndpoint: function(service_id){
+            for(var i = 0; i < this.resources.endpoints.length; i++){
+                let endpoint = this.resources.endpoints[i];
+                if (endpoint.service_id == service_id && endpoint.interface == 'public'){
+                    return endpoint
+                }
+            }
+        },
+
         draw: function(){
             this.showChartPie(
                 'chartMemUsed', 'Mem Used',
@@ -353,32 +375,46 @@ var app = new Vue({
             this.showChartPie('chartSecurityGroup', 'SecurityGroups', data);
             this.showChartPie('chartVolume', 'Volumes', data);
             this.showChartPie('chartVolumeStorage', 'Volume Storage', data);
-
+        },
+        getImage: function(image_id){
+            for(let i=0; i< this.resources.images; i++ ){
+                let image = this.resources.images[i];
+                if (image.id == image_id){
+                    return image
+                }
+            }
+            return {}
         }
     },
     mounted: function() {
-        // this.getServerInfo();
-        // this.listUsers();
-        // this.listProjects();
-        // this.listServices();
-        // this.listEndpoints();
+        this.getServerInfo();
+        this.getAuthInfo();
+        // this.listResource('services');
+        // this.listResource('endpoints');
+        // this.listResource('users');
+        // this.listResource('projects');
+        this.listResource('keypairs');
+        this.listResource('images');
+        this.listResource('flavors');
+        this.listResource('servers');
+        this.listResource('quotas');
         // this.listResource('networks');
         // this.listResource('subnets');
-        // this.listResource('routers')
+        // this.listResource('routers');
         // this.listResource('ports');
-        this.listResource('hypervisors');
+        // this.listResource('hypervisors');
         var self = this;
         self.intervalId = setInterval(function(){
-                self.listResource('hypervisors');
-                if(self.failedTimes >= 3){
-                    self.logError(`list resources failed ${self.failedTimes}, stop ${self.intervalId}`);
-                    clearInterval(self.intervalId);
-                }
-            }, 5000
-        );
-            // this.goTo(-1);
-            // this.changeDirectory('', pushHistory = true);
-                
+            // self.listResource('hypervisors');
+            self.listResource('servers');
+            console.log(self.resources.servers);
+            if(self.failedTimes >= 3){
+                self.logError(`list resources failed ${self.failedTimes}, stop ${self.intervalId}`);
+                clearInterval(self.intervalId);
+            }
+        }, 5000);
+
+
         // Vue.prototype.$echarts = echarts;
         this.draw();
     }

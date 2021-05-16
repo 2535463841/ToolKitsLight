@@ -1,0 +1,47 @@
+<h3>{{translate('flavors')}}</h3>
+<hr>
+
+<div class="btn-toolbar mb-3 float-right" role="toolbar" aria-label="Toolbar with button groups">
+    <div class="btn-group mr-2" role="group" aria-label="First group">
+        <input type="text" class="form-control " placeholder="click here to filter" >
+    </div>
+    <div class="btn-group mr-2" role="group" aria-label="First group">
+        <button type="button" class="btn btn-outline-secondary"><b-icon icon="plus"></b-icon> {{translate('createFlavor')}}</button>
+    </div>
+    <div class="btn-group mr-2" role="group" aria-label="First group">
+        <button type="button" class="btn btn-danger"><b-icon icon="trash-fill"></b-icon> {{translate('deleteFlavor')}}</button>
+    </div>
+</div>
+
+<table class="table table-hover table-sm table-striped" style="width: 100%;">
+    <thead class="table-light">
+        <tr>
+            <th>{{translate('name')}}</th>
+            <th>{{translate('vcpus')}} </th>
+            <th>{{translate('ram')}} </th>
+            <th>{{translate('disk')}} </th>
+            <th>{{translate('ephemeralDisk')}} </th>
+            <th>{{translate('swapDisk')}} </th>
+            <th>{{translate('rxtxFactor')}}</th>
+            <th>{{translate('isPublic')}}</th>
+            <th>{{translate('actions')}} </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr v-for="(item, index) in resources.flavors" v-model="resources.flavors">
+            <td><a href="">{{item.name}}</a></td>
+            <td>{{item.vcpus}}</td>
+            <td>{{item.ram}} MB</td>
+            <td>{{item.disk}} GB</td>
+            <td>{{item['OS-FLV-EXT-DATA:ephemeral']}} GB</td>
+            <td>{{item.swap || 0}} MB</td>
+            <td>{{item.rxtx_factor}}</td>
+            <td>{{item['os-flavor-access:is_public']}}</td>
+            <td>
+                <b-dropdown size="sm" split id="dropdown-1" :text="translate('updateMetadata')">
+                    <b-dropdown-item variant="danger">{{translate('deleteFlavor')}}</b-dropdown-item>
+                </b-dropdown>
+            </td>
+        </tr>
+    </tbody>
+</table>

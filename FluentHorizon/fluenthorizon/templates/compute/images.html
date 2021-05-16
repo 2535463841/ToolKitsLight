@@ -1,0 +1,51 @@
+<h3>{{translate('images')}}</h3>
+<hr>
+
+<div class="btn-toolbar mb-3 float-right" role="toolbar" aria-label="Toolbar with button groups">
+    <div class="btn-group mr-2" role="group" aria-label="First group">
+        <input type="text" class="form-control " placeholder="click here to filter" >
+    </div>
+    <div class="btn-group mr-2" role="group" aria-label="First group">
+        <button type="button" class="btn btn-outline-secondary"><b-icon icon="plus"></b-icon> {{translate('createImage')}}</button>
+    </div>
+    <div class="btn-group mr-2" role="group" aria-label="First group">
+        <button type="button" class="btn btn-danger"><b-icon icon="trash-fill"></b-icon> {{translate('deleteImage')}}</button>
+    </div>
+</div>
+
+<table class="table table-hover table-sm table-striped" style="width: 100%;">
+    <thead class="table-light">
+        <tr>
+            <th>{{translate('owner')}}</th>
+            <th>{{translate('name')}}</th>
+            <th>{{translate('type')}} </th>
+            <th>{{translate('status')}} </th>
+            <th>{{translate('visibility')}} </th>
+            <th>{{translate('protected')}} </th>
+            <th>{{translate('diskFormat')}} </th>
+            <th>{{translate('size')}} </th>
+            <th>{{translate('action')}} </th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr v-for="(item, index) in resources.images" v-model="resources.images">
+            <td>{{item.owner_name}}</a></td>
+            <td><a href="">{{item.name}}</a></td>
+            <td>{{item.type}}</td>
+            <td>{{item.status}}</td>
+            <td>{{item.visibility}}</td>
+            <td>{{item.protected}}</td>
+            <td>{{item.disk_format}}</td>
+            <td>{{item.size}}</td>
+            <td>
+                <b-dropdown size="sm" split id="dropdown-1" :text="translate('launch')">
+                    <b-dropdown-item>{{translate('createVolume')}}</b-dropdown-item>
+                    <b-dropdown-item>{{translate('editImage')}}</b-dropdown-item>
+                    <b-dropdown-item>{{translate('updateMetadata')}}</b-dropdown-item>
+                    <b-dropdown-item variant="danger">{{translate('deleteImage')}}</b-dropdown-item>
+                </b-dropdown>
+            </td>
+        </tr>
+    </tbody>
+</table>

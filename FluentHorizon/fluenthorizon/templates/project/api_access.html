@@ -1,19 +1,17 @@
 <h3>API Access</h3>
-
-
-
+<hr>
 <div class="btn-toolbar justify-content-between" role="toolbar">
     <div class="btn-group" role="group" aria-label="First group"> </div>
-    <div class="input-group-prepend">
+    <div class="input-group-prepend" style="padding-left: 10px;">
+        <b-button class="btn btn-sm btn-info" v-b-modal.modal-auth>
+            <b-icon icon="eye-fill"></b-icon>{{translate('viewCredentials')}}
+        </b-button>
         <button type="button" class="btn btn-sm btn-outline-secondary">
-            <b-icon icon='eye-fill'></b-icon>{{translate('viewCredentials')}}
-        </button>
-        <button type="button" class="btn btn-sm btn-outline-secondary">{{translate('downloadOpenstackRcFile')}}</button>
+            {{translate('downloadOpenstackRcFile')}}</button>
     </div>
 </div>
 
-
-<table class="table table-hover table-sm " style="width: 100%;">
+<table class="table table-hover table-sm table-striped" style="width: 100%;">
     <thead class="table-light">
         <tr>
             <th>{{translate('service')}}</th>
@@ -21,9 +19,32 @@
         </tr>
     </thead>
     <tbody>
-        <tr v-for="(item, index) in resources.service" v-model="resources.services">
+        <tr v-for="(item, index) in resources.services" v-model="resources.services">
             <td>{{item.name}}</td>
-            <td>{{item.endpoint}}</td>
+            <td>{{getPublicEndpoint(item.id).url}}</td>
         </tr>
     </tbody>
 </table>
+
+<!-- Modal file content -->
+<b-modal id="modal-auth" size="lg" :title="translate('userCredentialDetail')">
+    <form>
+        <div class="form-group">
+          <label >{{translate('username')}}</label>
+          <input type="text" class="form-control" v-model="auth.username" disabled>
+        </div>
+        <div class="form-group">
+          <label >{{translate('projectName')}}</label>
+          <input type="text" class="form-control" v-model="auth.projectName" disabled> 
+        </div>
+        <div class="form-group">
+            <label >{{translate('projectId')}}</label>
+            <input type="text" class="form-control" v-model="auth.projectId" disabled>
+        </div>
+        <div class="form-group">
+            <label >{{translate('authUrl')}}</label>
+            <input type="text" class="form-control" v-model="auth.authUrl" disabled>
+        </div>
+
+      </form>
+</b-modal>

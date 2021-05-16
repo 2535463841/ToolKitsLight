@@ -20,7 +20,7 @@
         </tr>
     </thead>
     <tbody>
-        <tr v-for="(item, index) in projects" v-model="projects">
+        <tr v-for="(item, index) in resources.projects" v-model="resources.projects">
             <td>{{item.id}}</td>
             <td><a href="#" v-on:click="getUser(item)">{{item.name}}</a></td>
             <td>{{item.enabled}}</td>

@@ -47,9 +47,36 @@ var DIRECOTRY = {
 
     oldPassword: {en: 'old password', zh: '旧密码'},
     newPassword: {en: 'new password', zh: '新密码'},
-    pleaseInputOldPassword: {en: 'please input old password', zh: '请输入旧密码'},
-    pleaseInputNewPassword: {en: 'please input new password', zh: '请输入新密码'},
 
+    service: {en: 'service ', zh: '服务'},
+    serviceEndpoint: {en: 'service endpoint', zh: '服务端点'},
+    apiAccess: {en: 'api access ', zh: '访问API'},
+    viewCredentials: {en: 'view credentials', zh: '查看凭据'},
+    downloadOpenstackRcFile: {en: 'download openstack rc file', zh: '下载openstackRC文件'},
+
+    instances: {en: 'instances', zh: '实例'},
+
+    images: {en: 'images', zh: '镜像'},
+    createImage: {en: 'delete image', zh: '创建镜像'},
+    owner: {en: 'owner', zh: '拥有者'},
+    name: {en: 'name', zh: '名字'},
+    type: {en: 'type', zh: '类型'},
+    status: {en: 'status', zh: '状态'},
+    visibility: {en: 'visibility', zh: '可见'},
+    protected: {en: 'protected', zh: '保护'},
+    diskFormat: {en: 'disk format', zh: '磁盘格式'},
+    action: {en: 'action', zh: '操作'},
+    actions: {en: 'action', zh: '操作'},
+    flavors: {en: 'flavors', zh: '规格'},
+    createFlavor: {en: 'create flavor', zh: '新建规格'},
+    deleteFlavor: {en: 'delete flavor', zh: '删除规格'},
+    updateMetadata: {en: 'update metadata', zh: '更新元数据'},
+
+    keypairs: {en: 'keypairs', zh: '规格'},
+    createKeypair: {en: 'create keypair', zh: '新建keypair'},
+    deleteKeypair: {en: 'delete keypair', zh: '删除keypair'},
+    deleteKeypairs: {en: 'delete keypair', zh: '删除keypair'},
+    importPublicKey: {en: 'import public key', zh: '导入公钥'},
 };
 var SUPPORT_LANG = ['en', 'zh'];
 

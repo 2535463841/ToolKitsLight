@@ -6,7 +6,7 @@ from keystoneclient.v3 import client
 
 from neutronclient.v2_0 import client as neutrnoclient
 from novaclient import client as novaclient
-
+import glanceclient
 
 class OpenstackClient:
     """openstack clients
@@ -17,12 +17,13 @@ class OpenstackClient:
     True
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, timeout=60, **kwargs):
         self.auth = v3.Password(*args, **kwargs)
-        self.session = session.Session(auth=self.auth)
+        self.session = session.Session(auth=self.auth, timeout=timeout)
         self.keystone = client.Client(session=self.session)
         self.neutron = neutrnoclient.Client(session=self.session)
         self.nova = novaclient.Client('2.0', session=self.session)
+        self.glance = glanceclient.Client('2', session=self.session)
 
     @classmethod
     def create_instance(cls, *kwargs):
@@ -68,3 +69,14 @@ class OpenstackClient:
             role = self.get_or_create_role(role_name)
             self.keystone.roles.grant(role, user=user, project=project)
         return user
+
+    def get_quota(self):
+        project_id = self.session.get_project_id()
+        return self.nova.quotas.get(project_id)
+
+    def get_quota_used(self):
+        project_id = self.session.get_project_id()
+        quota_used = {
+            'instances': len(self.nova.servers.list(project=project_id))
+        }
+        return quota_used

@@ -101,14 +101,25 @@
                         autoHideDelay: autoHideDelay
                     });
                 },
+                logError: function (msg, autoHideDelay = 1000, title = 'Warn') {
+                  this.$bvToast.toast(msg, {
+                      title: title,
+                      variant: 'danger',
+                      autoHideDelay: autoHideDelay
+                  });
+              },
                 login: function(){
                     this.logInfo('loging ...')
                     var xhr = new XMLHttpRequest();
                     var self = this;
                     xhr.onload = function () {
                         var data = JSON.parse(xhr.responseText);
-                        self.logInfo('login success');
-                        window.location.href = "/index";
+                        if (xhr.status == 200){
+                          self.logInfo('login success');
+                          window.location.href = "/index";
+                        }else{
+                          self.logError(`login failed, reasion: ${data.error}`);
+                        }
                     };
                     xhr.onerror = function () {
                         self.logInfo('login failed');
