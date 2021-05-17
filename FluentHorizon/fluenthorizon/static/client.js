@@ -26,43 +26,6 @@ class WetoolFS {
                 xhr.send(JSON.stringify({action: body }));
             }
         };
-        this.listDir = function (pathItems, showAll, onload_callback, onerror_callback = null) {
-            var action = {
-                name: 'list_dir',
-                params: { path_items: pathItems, all: showAll }
-            };
-            this.postAction(action, onload_callback, onerror_callback = onerror_callback);
-        };
-
-        this.deleteDir = function (pathItems, onload_callback, onerror_callback = null) {
-            var action = {
-                name: 'delete_dir',
-                params: { path_items: pathItems, force: true }
-            };
-            console.log(action);
-            this.postAction(action, onload_callback, onerror_callback = onerror_callback);
-        };
-        this.renameDir = function (filename, path_list, newName, onload_callback, onerror_callback = null) {
-            var action = {
-                name: 'rename_dir',
-                params: { path_list: path_list, file: filename, new_name: newName }
-            };
-            this.postAction(action, onload_callback, onerror_callback = onerror_callback);
-        };
-        this.createDir = function (pathItems, onload_callback, onerror_callback = null) {
-            var action = {
-                name: 'create_dir',
-                params: { path_items: pathItems}
-            };
-            this.postAction(action, onload_callback, onerror_callback = onerror_callback);
-        };
-        this.getFileContent = function (path_list, filename, onload_callback, onerror_callback = null) {
-            var action = {
-                name: 'get_file',
-                params: { path_list: path_list, file: filename }
-            };
-            this.postAction(action, onload_callback, onerror_callback = onerror_callback);
-        };
         this.uploadFile = function (path_list, file, onload_callback, onerror_callback = null, uploadCallback = null) {
             var action = {
                 name: 'upload_file',
@@ -72,13 +35,6 @@ class WetoolFS {
             formData.append('action', JSON.stringify(action));
             formData.append('file', file);
             this.postAction(formData, onload_callback, onerror_callback = onerror_callback, uploadCallback = uploadCallback);
-        };
-        this.search = function(partern, onload_callback, onerror_callback = null){
-            var action = {
-                name: 'search',
-                params: { partern: partern}
-            };
-            this.postAction(action, onload_callback, onerror_callback = onerror_callback);
         };
         this.get = function (body, onload_callback, onerror_callback = null, uploadCallback = null) {
             var xhr = new XMLHttpRequest();

@@ -393,11 +393,11 @@ var app = new Vue({
         // this.listResource('endpoints');
         // this.listResource('users');
         // this.listResource('projects');
-        this.listResource('keypairs');
+        // this.listResource('keypairs');
         this.listResource('images');
-        this.listResource('flavors');
-        this.listResource('servers');
-        this.listResource('quotas');
+        // this.listResource('flavors');
+        // this.listResource('servers');
+        // this.listResource('quotas');
         // this.listResource('networks');
         // this.listResource('subnets');
         // this.listResource('routers');

@@ -4,15 +4,15 @@ import logging
 
 from flask import session
 
-from wetool import net
+from fluentcore import net
+from fluentcore.common import log
 
-import manager
 import views
 
 
 ROUTE = os.path.dirname(os.path.abspath(__file__))
 
-LOG = logging.getLogger(__name__)
+LOG = log.getLogger(__name__)
 
 
 class HttpServer:
@@ -65,7 +65,7 @@ class HorizonHttpServer(HttpServer):
     ]
 
     def __init__(self, host=None, port=80):
-        super().__init__('FluentFS', host=host, port=port,
+        super().__init__('HorizonHttpServer', host=host, port=port,
                          template_folder=os.path.join(ROUTE, 'templates'),
                          static_folder=os.path.join(ROUTE, 'static'))
 

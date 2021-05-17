@@ -74,9 +74,9 @@ class OpenstackClient:
         project_id = self.session.get_project_id()
         return self.nova.quotas.get(project_id)
 
-    def get_quota_used(self):
-        project_id = self.session.get_project_id()
-        quota_used = {
-            'instances': len(self.nova.servers.list(project=project_id))
-        }
-        return quota_used
+    # def get_quota_used(self):
+    #     project_id = self.session.get_project_id()
+    #     quota_used = {
+    #         'instances': len(self.nova.servers.list())
+    #     }
+    #     return quota_used

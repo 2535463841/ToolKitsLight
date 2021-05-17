@@ -1,7 +1,6 @@
 import os
 import json
 import flask
-import logging
 
 from urllib import parse
 
@@ -9,12 +8,12 @@ from flask import views
 from flask import current_app
 from flask import session
 
-from fluentcore import code
+from fluentcore.common import log
 from fluentcore import fs
 
 from openstack import client
 
-LOG = logging.getLogger(__name__)
+LOG = log.getLogger(__name__)
 
 OS_AUTH_URL = 'http://controller:35357/v3'
 
@@ -24,6 +23,7 @@ _CACHE_IMAGES = {}
 _CACHE_FLAVORS = {}
 _CACHE_PROJECTS = {}
 
+
 def get_client():
     auth = session.get('auth')
     username = auth.get('username')
@@ -32,7 +32,7 @@ def get_client():
         project_name = auth.get('projectName')
         user_domain_name = auth.get('userDomain', 'Default')
         project_domain_name = auth.get('projectDomain', 'Default')
-        
+
         openstackclient = client.OpenstackClient(
             OS_AUTH_URL,
             username=username, password=password, project_name=project_name,
@@ -56,30 +56,7 @@ class HomeView(views.MethodView):
 class IndexView(views.MethodView):
 
     def get(self):
-        if session.get('username') not in CLIENTS:
-            return flask.redirect('/login')
         return flask.render_template('index.html')
-
-
-class QrcodeView(views.MethodView):
-
-    def get(self):
-        qr = code.QRCodeExtend(border=1)
-        file_name = flask.request.args.get('file')
-        file_path = flask.request.args.getlist('path_list') or []
-        if file_name and file_path is not None:
-            content = parse.urlunparse([
-                'http', current_app.config['SERVER_NAME'],
-                'download/{0}'.format(file_name), None,
-                parse.urlencode({'path_list': file_path}, doseq=True),
-                None])
-        else:
-            content = parse.urlunparse([
-                'http', current_app.config['SERVER_NAME'], '', None,
-                None, None])
-        qr.add_data(content)
-        buffer = qr.parse_image_buffer()
-        return buffer.getvalue()
 
 
 class ActionView(views.MethodView):
@@ -109,11 +86,10 @@ class ActionView(views.MethodView):
         if not data:
             msg = 'action body  not found'
             return get_json_response({'error': msg}, status=400)
-        
+
         action = json.loads(data).get('action')
         name = action.get('name')
         params = action.get('params', {})
-        print('request action: ', name, params)
         LOG.debug('request action: %s, %s', name, params)
         if name not in self.ACTIONS:
             msg = 'action {0} is not supported'.format(name)
@@ -128,7 +104,7 @@ class ActionView(views.MethodView):
     def list_services(self, **params):
         items = []
         columns = ['id', 'enabled', 'name', 'type']
-        for item in CLIENTS[session.get('username')].keystone.services.list():
+        for item in get_client().keystone.services.list():
             items.append(
                 {k: getattr(item, k) for k in columns}
             )
@@ -137,7 +113,7 @@ class ActionView(views.MethodView):
     def list_endpoints(self, **params):
         items = []
         columns = ['id', 'enabled', 'interface', 'region', 'url', 'service_id']
-        for item in CLIENTS[session.get('username')].keystone.endpoints.list():
+        for item in get_client().keystone.endpoints.list():
             items.append(
                 {k: getattr(item, k) for k in columns}
             )
@@ -146,7 +122,8 @@ class ActionView(views.MethodView):
     def list_projects(self, **params):
         items = []
         columns = ['id', 'enabled', 'name']
-        for item in CLIENTS[session.get('username')].keystone.projects.list():
+        user_id = session.get('auth').get('userId')
+        for item in get_client().keystone.projects.list(user=user_id):
             items.append(
                 {k: getattr(item, k) for k in columns}
             )
@@ -155,28 +132,28 @@ class ActionView(views.MethodView):
     def list_users(self, **params):
         items = []
         columns = ['id', 'enabled', 'name']
-        for item in CLIENTS[session.get('username')].keystone.users.list():
+        for item in get_client().keystone.users.list():
             items.append(
                 {k: getattr(item, k) for k in columns}
             )
         return {'users': items}
 
     def list_networks(self, **params):
-        # for network in CLIENTS[session.get('username')].neutron.list_networks():
-        #     print(CLIENTS[session.get('username')].neutron.list_networks())
-        return CLIENTS[session.get('username')].neutron.list_networks()
+        # for network in get_client().neutron.list_networks():
+        #     print(get_client().neutron.list_networks())
+        return get_client().neutron.list_networks()
 
     def list_routers(self, **params):
-        return CLIENTS[session.get('username')].neutron.list_routers()
+        return get_client().neutron.list_routers()
 
     def list_subnets(self, **params):
-        return CLIENTS[session.get('username')].neutron.list_subnets()
+        return get_client().neutron.list_subnets()
 
     def list_ports(self, **params):
-        return CLIENTS[session.get('username')].neutron.list_ports()
+        return get_client().neutron.list_ports()
 
     def list_agents(self, **params):
-        return CLIENTS[session.get('username')].neutron.list_agents()
+        return get_client().neutron.list_agents()
 
     def _make_dict_list(self, objects, keys):
         items = []
@@ -195,7 +172,7 @@ class ActionView(views.MethodView):
     def list_hypervisors(self, **params):
         return {
             'hypervisors': self._make_dict_list(
-                CLIENTS[session.get('username')].nova.hypervisors.list(),
+                get_client().nova.hypervisors.list(),
                 ['hypervisor_hostname', 'hypervisor_type', 'host_ip',
                  'status', 'state', 'memory_mb_used', 'memory_mb',
                  'vcpus_used', 'vcpus'])
@@ -205,11 +182,11 @@ class ActionView(views.MethodView):
         global _CACHE_IMAGES, _CACHE_FLAVORS
         nclient = get_client().nova
         servers = self._make_dict_list(
-                nclient.servers.list(),
-                ['id', 'name', 'status', "OS-EXT-STS:task_state", 'addresses',
-                 "image", 'OS-EXT-STS:vm_state', 'created',
-                 'OS-EXT-AZ:availability_zone', 'flavor',
-                 "OS-EXT-STS:power_state", 'key_name'])
+            nclient.servers.list(),
+            ['id', 'name', 'status', "OS-EXT-STS:task_state", 'addresses',
+             "image", 'OS-EXT-STS:vm_state', 'created',
+             'OS-EXT-AZ:availability_zone', 'flavor',
+             "OS-EXT-STS:power_state", 'key_name'])
         for server in servers:
             image_id = server.get('image').get('id')
             if image_id not in _CACHE_IMAGES:
@@ -235,21 +212,26 @@ class ActionView(views.MethodView):
 
     def list_images(self, **params):
         global _CACHE_PROJECTS
-        gclient = CLIENTS[session.get('username')].glance
+        gclient = get_client().glance
         images = self._make_dict_list(
             gclient.images.list(),
             ['id', 'name', 'status', 'container_format', 'disk_format',
              'size', 'visibility', 'protected', 'owner'])
+
+        user_id = session.get('auth').get('userId')
         for image in images:
             owner_id = image.get('owner')
             if owner_id not in _CACHE_PROJECTS:
-                _CACHE_PROJECTS = {
-                    p['id']: p for p in self.list_projects().get('projects')}
-            image['owner_name'] = _CACHE_PROJECTS[owner_id].get('name')
+                projects = get_client().keystone.projects.list(user=user_id)
+                _CACHE_PROJECTS = {p.id: p for p in projects}
+            if owner_id in _CACHE_PROJECTS:
+                image['owner_name'] = _CACHE_PROJECTS.get(owner_id).name
+            else:
+                image['owner_name'] = None
         return {'images': images}
 
     def list_flavors(self, **params):
-        nclient = CLIENTS[session.get('username')].nova
+        nclient = get_client().nova
         return {'flavors': self._make_dict_list(
             nclient.flavors.list(),
             ['id', 'name', 'ram', 'vcpus', 'os-flavor-access:is_public',
@@ -258,7 +240,7 @@ class ActionView(views.MethodView):
         }
 
     def list_keypairs(self, **params):
-        nclient = CLIENTS[session.get('username')].nova
+        nclient = get_client().nova
         return {'keypairs': self._make_dict_list(
             nclient.keypairs.list(),
             ['id', 'name', 'fingerprint', 'public_key'])
@@ -270,15 +252,8 @@ class ActionView(views.MethodView):
                                        ['instances', 'cores', 'ram',
                                         'floating_ips', 'security_groups',
                                         'key_pairs']
-        )
-        print('==========================')
-        print(quota)
-        return {
-            'quotas': {
-                'total': quota,
-                'used': c.get_quota_used()
-            }
-        }
+                                       )
+        return {'quotas': quota}
 
 
 class FaviconView(views.MethodView):
@@ -294,13 +269,13 @@ class ServerView(views.MethodView):
         return {'server': {
             'name': 'Openstack',
             'version': '0.1',
-            'username': session.get('username')
-            }
+            'username': session.get('auth').get('username')
+        }
         }
 
 
 class LoginView(views.MethodView):
-    
+
     def get(self):
         return flask.render_template('login.html')
 
