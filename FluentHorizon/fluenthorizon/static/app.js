@@ -52,13 +52,21 @@ var app = new Vue({
         resources: {
             ports: [], routers: [],
             hypervisors: [],
-            servers: [], images: [], flavors: [], keypairs: []
+            servers: [], images: [], flavors: [], keypairs: [],
+            quotas: {},
+            floatingips: [], security_groups: []
         },
         usage: {
             memory: {used: 0, total: 0},
         },
-        auth: {}
-
+        auth: {},
+        instanceQuota: new ChartPieUsed('instancesQuota', ''),
+        vcpuQuota: new ChartPieUsed('vcpuQuota', ''),
+        ramQuota: new ChartPieUsed('ramQuota', ''),
+        fipQuota: new ChartPieUsed('fipQuota', ''),
+        sgQuota: new ChartPieUsed('sgQuota', ''),
+        usedCpu: 0,
+        usedRam: 0
     },
     methods: {
         logDebug: function (msg, autoHideDelay = 1000, title = 'Debug') {
@@ -251,32 +259,6 @@ var app = new Vue({
                 }
             )
         },
-        listServices: function(){
-            var self = this;
-            this.wetoolFS.postAction(
-                {'name': 'list_services'},
-                function(status, data){
-                    if(status == 200){
-                        self.services = data.services;
-                    }else{
-                        self.logError('get services failed')
-                    }
-                }
-            )
-        },
-        listEndpoints: function(){
-            var self = this;
-            this.wetoolFS.postAction(
-                {'name': 'list_endpoints'},
-                function(status, data){
-                    if(status == 200){
-                        self.endpoints = data.endpoints;
-                    }else{
-                        self.logError('get endpoints failed')
-                    }
-                }
-            )
-        },
         listResource: function(resource_name){
             var self = this;
             this.wetoolFS.postAction(
@@ -290,13 +272,15 @@ var app = new Vue({
                                 self.usage['memory']['used'] += item.memory_mb_used;
                                 self.usage['memory']['total'] += item.memory_mb;
                             });
-                            self.showChartPie(
-                                'chartMemUsed', 'Mem Used',
-                                [
-                                    {name: 'Used', value: self.usage['memory']['used']},
-                                    {name: 'Free', value: self.usage['memory']['total'] - self.usage['memory']['used']},
-                                ]
-                            );
+                        }else if(resource_name == 'servers'){
+                            let usedCpu = 0;
+                            let usedRam = 0;
+                            self.resources[resource_name].forEach(function(item) {
+                                usedCpu += item.flavor.vcpus;
+                                usedRam += item.flavor.ram;
+                            });
+                            self.usedCpu = usedCpu;
+                            self.usedRam = usedRam;
                         }
                     }else{
                         self.logError(`list ${resource_name} failed,  ${status}, ${data.error}`)
@@ -306,7 +290,7 @@ var app = new Vue({
                 }
             )
         },
-        showChartPie: function(eleId, title, data){
+        showChartPieUsed: function(eleId, title, data){
             var chart = echarts.init(document.getElementById(eleId));
             chart.setOption({
                 title: {text: title, left: 'center'},
@@ -347,34 +331,28 @@ var app = new Vue({
         },
 
         draw: function(){
-            this.showChartPie(
-                'chartMemUsed', 'Mem Used',
-                [
-                    {value: 512, name: 'Used'},
-                    {value: 1024, name: 'Total'},
-                ]);
-            this.showChartPie(
-                'chartCpuUsed', 'Cpu Used',
-                [
-                    {value: 0.3, name: 'Used'},
-                    {value: 1, name: 'Total'},
-                ]);
-            this.showChartPie(
-                'chartDiskUsed', 'Disk Used',
-                [
-                    {value: 1000, name: 'Used'},
-                    {value: 1000000000, name: 'Total'},
-                ]);
+            this.instanceQuota.refresh({
+                'Used': this.resources.servers.length,
+                'Avalialble': this.resources.quotas['instances'] - this.resources.servers.length});
 
-            var data = [
-                {value: 1000, name: 'Used'},
-                {value: 10000, name: 'Total'},
-            ];
-            this.showChartPie('chartInstance', 'Instances', data);
-            this.showChartPie('chartFloatingIp', 'Floating IPs', data);
-            this.showChartPie('chartSecurityGroup', 'SecurityGroups', data);
-            this.showChartPie('chartVolume', 'Volumes', data);
-            this.showChartPie('chartVolumeStorage', 'Volume Storage', data);
+            let usedCpu = 0, usedRam = 0;
+            this.resources['servers'].forEach(function(item) {
+                usedCpu += item.flavor.vcpus;
+                usedRam += item.flavor.ram;
+            });
+            this.vcpuQuota.refresh({
+                'Used': usedCpu,
+                'Avalialble': this.resources.quotas.cores - usedCpu});
+            this.ramQuota.refresh({
+                'Used': usedRam,
+                'Avalialble': this.resources.quotas.ram - usedRam});
+
+            this.fipQuota.refresh({
+                'Used': this.resources.floatingips.length,
+                'Avalialble': this.resources.quotas.floating_ips - this.resources.floatingips.length});
+            this.sgQuota.refresh({
+                'Used': this.resources.security_groups.length,
+                'Avalialble': this.resources.quotas.security_groups - this.resources.security_groups.length});
         },
         getImage: function(image_id){
             for(let i=0; i< this.resources.images; i++ ){
@@ -389,33 +367,35 @@ var app = new Vue({
     mounted: function() {
         this.getServerInfo();
         this.getAuthInfo();
-        // this.listResource('services');
-        // this.listResource('endpoints');
-        // this.listResource('users');
-        // this.listResource('projects');
-        // this.listResource('keypairs');
+        this.listResource('services');
+        this.listResource('endpoints');
+        this.listResource('users');
+        this.listResource('projects');
+        this.listResource('keypairs');
+        this.listResource('floatingips');
+        this.listResource('security_groups');
+        this.listResource('quotas');
         this.listResource('images');
-        // this.listResource('flavors');
-        // this.listResource('servers');
-        // this.listResource('quotas');
-        // this.listResource('networks');
-        // this.listResource('subnets');
+
+        this.listResource('flavors');
+        this.listResource('servers');
+        this.listResource('networks');
+        this.listResource('subnets');
         // this.listResource('routers');
-        // this.listResource('ports');
-        // this.listResource('hypervisors');
+        this.listResource('ports');
+        this.listResource('hypervisors');
         var self = this;
         self.intervalId = setInterval(function(){
             // self.listResource('hypervisors');
             self.listResource('servers');
-            console.log(self.resources.servers);
             if(self.failedTimes >= 3){
                 self.logError(`list resources failed ${self.failedTimes}, stop ${self.intervalId}`);
                 clearInterval(self.intervalId);
             }
         }, 5000);
 
+        setInterval(function(){self.draw();}, 2000);
 
         // Vue.prototype.$echarts = echarts;
-        this.draw();
     }
 });

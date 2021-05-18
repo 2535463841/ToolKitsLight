@@ -97,4 +97,58 @@ function getItemsBefore(array, beforeIndex){
         }
     }
     return items;
+};
+
+class ChartPieUsed {
+    constructor(eleId, title) {
+        this.elemId = eleId;
+        this.title = title;
+        this.data = {};
+        this.chart = null;
+
+        this.setData = function(data){
+            // used: >= 1.8 -> red
+            //       >= 1   -> oranage
+            //       <1     -> blue
+            let color = 'rgb(66, 139, 202)';
+            if (data.length >= 2){
+                if(data[1].value > 0){
+                    let usedPercent = data[0].value / data[1].value;
+                    if(usedPercent >= 1.8){
+                        color = 'rgb(217, 83, 79)';
+                    }else if(usedPercent >= 1){
+                        color = 'rgb(255, 193, 7)'
+                    }
+                }
+            }
+            this.chart.setOption({
+                title: {text: title, left: 'center'},
+                tooltip: {trigger: 'item'},
+                series: [{
+                    name: title, type: 'pie', radius: '50%',
+                    color:[color, 'rgb(206, 206, 206)'],
+                    label: {show: false},
+                    data: data,
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'}
+                    }},
+                ]
+            });
+        }
+        this.refresh = function(data){
+            if (this.chart == null){
+                this.chart = echarts.init(document.getElementById(this.elemId));
+            }
+            var dataList = [];
+            for (var key in data) {
+                let value = data[key];
+                dataList.push({value: value, name: key});
+            }
+            console.log(dataList);
+            this.setData(dataList);
+        }
+    }
 }

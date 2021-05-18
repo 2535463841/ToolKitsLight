@@ -71,6 +71,7 @@ class ActionView(views.MethodView):
         'list_hypervisors', 'list_servers', 'list_instances',
         'list_images', 'list_flavors', 'list_keypairs',
         'list_quotas',
+        'list_floatingips', 'list_security_groups'
     }
 
     def post(self):
@@ -154,6 +155,12 @@ class ActionView(views.MethodView):
 
     def list_agents(self, **params):
         return get_client().neutron.list_agents()
+
+    def list_floatingips(self, **params):
+        return get_client().neutron.list_floatingips()
+
+    def list_security_groups(self, **params):
+        return get_client().neutron.list_security_groups()
 
     def _make_dict_list(self, objects, keys):
         items = []
