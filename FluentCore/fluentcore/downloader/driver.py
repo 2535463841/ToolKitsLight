@@ -17,10 +17,10 @@ class DownloadDriver(object):
         self.progress = progress
         self.timeout = timeout
 
-    def download_urls(self, url_list, headers=None):
+    def download_urls(self, url_list):
         with futures.ThreadPoolExecutor(self.workers) as executor:
             results = executor.map(self.download_url, url_list)
-        
+
         for result in results:
             LOG.debug('completed %s', result)
 

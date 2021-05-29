@@ -61,23 +61,16 @@ class BingImagDownloader:
                                                  workers=workers,
                                                  progress=progress)
 
-        img_links = self.find_all_links(page, resolution=resolution)
+        img_links = self.find_image_links(page, resolution=resolution)
         LOG.info('found %s links in page %s.', len(img_links), page)
         driver.download_urls(img_links)
+
+    def find_image_links(self, page, resolution=None):
+        link_regex = '.*\.(jpg|png)$' if not resolution else \
+                     '.*{}.*\.(jpg|png)$'.format(resolution)
+        return urllib_driver.find_links(self.get_page_url(page),
+                                        link_regex=link_regex)
 
     def get_page_url(self, page):
         return URL_GET_IMAGES_PAGE.format(scheme=self.scheme,
                                           host=self.host,page=page)
-
-    def find_all_links(self, page, resolution=None):
-        httpclient = urllib3.PoolManager(headers=self.headers)
-        resp = httpclient.request('GET', self.get_page_url(page))
-        if resp.status != 200:
-            raise Exception('get web page failed, %s' % resp.data)
-        html = bs4.BeautifulSoup(resp.data, features="html.parser")
-        img_links = []
-        for link in html.find_all(name='a'):
-            if link.get('href').endswith('.jpg') and (
-               not resolution or resolution in link.get('href')):
-                img_links.append(link.get('href'))
-        return img_links

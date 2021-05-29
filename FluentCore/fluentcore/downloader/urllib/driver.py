@@ -2,6 +2,8 @@ import io
 import os
 import urllib3
 
+import bs4
+import re
 from fluentcore.common import log
 from fluentcore.downloader import driver
 
@@ -18,6 +20,30 @@ DEFAULT_HEADERS = {
     'Upgrade-Insecure-Requests': '1',
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
 }
+
+
+def find_links(url, link_regex=None, headers=None):
+    """
+    >>> links = find_links('http://www.baidu.com', 
+    ...                    link_regex=r'.*.(jpg|png)$')
+    """
+    httpclient = urllib3.PoolManager(headers=headers)
+    resp = httpclient.request('GET', url)
+    if resp.status != 200:
+        raise Exception('get web page failed, %s' % resp.data)
+    html = bs4.BeautifulSoup(resp.data, features="html.parser")
+    img_links = []
+    if link_regex:
+        regex_obj = re.compile(link_regex)
+    else:
+        regex_obj = None
+    for link in html.find_all(name='a'):
+        if not link.get('href'):
+            continue
+        if regex_obj and not regex_obj.match(link.get('href')):
+            continue
+        img_links.append(link.get('href'))
+    return img_links
 
 
 class Urllib3Driver(driver.DownloadDriver):
