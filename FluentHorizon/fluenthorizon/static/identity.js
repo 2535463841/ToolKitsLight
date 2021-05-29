@@ -3,6 +3,7 @@
 var app = new Vue({
     el: '#app',
     data: {
+        name: 'identity',
         server: {name: '', version: ''},
         children: [],
         historyPath: [],

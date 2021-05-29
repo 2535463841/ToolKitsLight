@@ -111,7 +111,7 @@ class ActionView(views.MethodView):
         params = action.get('params')
         LOG.debug('request action: %s, %s', name, params)
         if name not in self.ACTION_MAP:
-            msg = 'action %s is not supported'.format(name)
+            msg = 'action {} is not supported'.format(name)
             return get_json_response({'error': msg}, status=400)
         try:
             resp_body = getattr(self, name)(params)

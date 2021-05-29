@@ -3,6 +3,7 @@
 var app = new Vue({
     el: '#app',
     data: {
+        name: 'compute',
         server: {name: '', version: ''},
         children: [],
         historyPath: [],
@@ -32,13 +33,7 @@ var app = new Vue({
         usageStart: 0,
         usageEnd: 0,
         display: 'overreview',
-        menuTree: {
-            project: ['api_access'],
-            identity: ['projects', 'users', 'services', 'endpoints'],
-            compute: ['overreview', 'instances', 'hypervisors', 'images', 'flavors'],
-            networking: ['routers', 'networks', 'subnets', 'ports'],
-            settings: ['userSettings', 'changePassword'],
-        },
+        menuTree: ['overreview', 'instances', 'hypervisors', 'images', 'flavors'],
         users: [],
         projects: [],
         services: [],
@@ -379,25 +374,18 @@ var app = new Vue({
         this.listResource('users');
         this.listResource('projects');
         this.listResource('keypairs');
-        // this.listResource('floatingips');
-        this.listResource('security_groups');
         this.listResource('quotas');
         this.listResource('images');
-
         this.listResource('flavors');
         this.listResource('servers');
-        this.listResource('networks');
-        this.listResource('subnets');
-        // this.listResource('routers');
-        this.listResource('ports');
         this.listResource('hypervisors');
         var self = this;
 
-        this.instanceQuota.init();
-        this.vcpuQuota.init();
-        this.ramQuota.init();
-        this.fipQuota.init();
-        this.sgQuota.init();
+        // this.instanceQuota.init();
+        // this.vcpuQuota.init();
+        // this.ramQuota.init();
+        // this.fipQuota.init();
+        // this.sgQuota.init();
 
         self.intervalId = setInterval(function(){
             // self.listResource('hypervisors');

@@ -1,6 +1,5 @@
 import os
 import flask
-import logging
 
 from flask import session
 
@@ -59,6 +58,7 @@ class HorizonHttpServer(HttpServer):
         (r'/favicon.ico', views.FaviconView.as_view('favicon')),
         (r'/', views.HomeView.as_view('home')),
         (r'/index', views.IndexView.as_view('index')),
+        (r'/<name>.html', views.HtmlView.as_view('html')),
         (r'/actions', views.ActionView.as_view('action')),
         (r'/server', views.ServerView.as_view('server')),
         (r'/login', views.LoginView.as_view('login')),

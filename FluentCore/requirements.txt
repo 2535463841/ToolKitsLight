@@ -4,3 +4,4 @@ paramiko
 qrcode
 pillow
 urllib3
+pyzbar

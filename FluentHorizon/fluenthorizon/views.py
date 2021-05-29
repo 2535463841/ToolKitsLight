@@ -1,15 +1,11 @@
-import os
-import json
 import flask
-
-from urllib import parse
+import json
 
 from flask import views
 from flask import current_app
 from flask import session
 
 from fluentcore.common import log
-from fluentcore import fs
 
 from openstack import client
 
@@ -51,6 +47,13 @@ class HomeView(views.MethodView):
 
     def get(self):
         return flask.redirect('/login')
+
+
+class HtmlView(views.MethodView):
+
+    def get(self, name):
+        print('xxx', name)
+        return flask.render_template('{}.html'.format(name))
 
 
 class IndexView(views.MethodView):
@@ -134,9 +137,7 @@ class ActionView(views.MethodView):
         items = []
         columns = ['id', 'enabled', 'name']
         for item in get_client().keystone.users.list():
-            items.append(
-                {k: getattr(item, k) for k in columns}
-            )
+            items.append({k: getattr(item, k) for k in columns})
         return {'users': items}
 
     def list_networks(self, **params):

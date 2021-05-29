@@ -1,7 +1,11 @@
 import hashlib
-import qrcode
 import io
 import random
+
+import qrcode
+from pyzbar import pyzbar
+
+from PIL import Image
 
 LOWER = 'abcdefghijklmnopqrstuvwxyz'
 UPPER = 'abcdefghijklmnopqrstuvwxyz'.upper()
@@ -96,6 +100,17 @@ class QRCodeExtend(qrcode.QRCode):
         buffer = io.BytesIO()
         self.make_image().save(buffer)
         return buffer
+
+    def save(self, output):
+        img = self.make_image()
+        img.save(output)
+
+    @classmethod
+    def dump(cls, filename):
+        img = Image.open(filename)
+        return [
+            txt.data.decode("utf-8") for txt in pyzbar.decode(img)
+        ]
 
 
 def random_password(lower=4, upper=4, number=4, special=4):
