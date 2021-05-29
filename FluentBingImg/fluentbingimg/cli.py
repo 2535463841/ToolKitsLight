@@ -7,9 +7,12 @@ from fluentcore.common import log
 UHD_CHOICES = ['only', 'include', 'no']
 
 arguments = [
-    cliparser.Argument('page', type=int),
     cliparser.Argument('-d', '--debug', action='store_true',
                        help='show debug message'),
+    cliparser.Argument('-s', '--start', type=int, default=1,
+                       help='start page, default is 1'),
+    cliparser.Argument('-e', '--end', type=int,
+                       help='end page, default is None'),
     cliparser.Argument('-u', '--uhd', default='only', choices=UHD_CHOICES,
                        help='only: only download UHD; '
                             'include: download UHD and other resolutions; '

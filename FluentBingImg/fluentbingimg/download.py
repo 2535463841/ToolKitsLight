@@ -25,13 +25,14 @@ def main():
         return 1
 
     driver = downloader.BingImagDownloader()
-    driver.download(args.page,
-                    resolution=UHD_RESOLUTION_MAPPING[args.uhd],
-                    progress=not args.no_progress,
-                    download_dir=args.dir,
-                    workers=args.workers,
-                    timeout=args.timeout,
-                    use_wget=args.wget)
+    for page in range(args.start, args.end or (args.start + 1)):
+        driver.download(page,
+                        resolution=UHD_RESOLUTION_MAPPING[args.uhd],
+                        progress=not args.no_progress,
+                        download_dir=args.dir,
+                        workers=args.workers,
+                        timeout=args.timeout,
+                        use_wget=args.wget)
 
 
 if __name__ == '__main__':
