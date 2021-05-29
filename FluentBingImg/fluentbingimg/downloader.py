@@ -1,7 +1,3 @@
-import os
-import bs4
-import urllib3
-
 from fluentcore.common import log
 from fluentcore.downloader.urllib import driver as urllib_driver
 from fluentcore.downloader.wget import driver as wget_driver
@@ -66,11 +62,11 @@ class BingImagDownloader:
         driver.download_urls(img_links)
 
     def find_image_links(self, page, resolution=None):
-        link_regex = '.*\.(jpg|png)$' if not resolution else \
-                     '.*{}.*\.(jpg|png)$'.format(resolution)
+        link_regex = r'.*\.(jpg|png)$' if not resolution else \
+                     r'.*{}.*\.(jpg|png)$'.format(resolution)
         return urllib_driver.find_links(self.get_page_url(page),
                                         link_regex=link_regex)
 
     def get_page_url(self, page):
         return URL_GET_IMAGES_PAGE.format(scheme=self.scheme,
-                                          host=self.host,page=page)
+                                          host=self.host, page=page)

@@ -5,6 +5,7 @@ import collections
 
 cpu_count = collections.namedtuple('cpu_count', 'phy_core v_core')
 
+
 class os:
 
     @staticmethod

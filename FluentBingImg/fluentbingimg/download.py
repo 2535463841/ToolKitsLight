@@ -24,11 +24,11 @@ def main():
         LOG.error('wget is not support in windows')
         return 1
 
-    driver = downloader.BingImagDownloader()
     if args.end and args.end < args.start:
         LOG.error('invalid value, end page can not lower than start page.')
         return 1
 
+    driver = downloader.BingImagDownloader()
     for page in range(args.start, (args.end or args.start) + 1):
         driver.download(page,
                         resolution=UHD_RESOLUTION_MAPPING[args.uhd],

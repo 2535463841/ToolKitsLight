@@ -9,22 +9,12 @@ from fluentcore.downloader import driver
 
 LOG = log.getLogger(__name__)
 
-DEFAULT_WORKERS = 10
 FILE_NAME_MAX_SIZE = 50
-DEFAULT_HEADERS = {
-    'Accept': 'text/html,application/xhtml+xml',
-    'Accept-Encoding': 'gzip, deflate',
-    'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-    'Cache-Control': 'max-age=0',
-    'Connection': 'keep-alive',
-    'Upgrade-Insecure-Requests': '1',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-}
 
 
 def find_links(url, link_regex=None, headers=None):
     """
-    >>> links = find_links('http://www.baidu.com', 
+    >>> links = find_links('http://www.baidu.com',
     ...                    link_regex=r'.*.(jpg|png)$')
     """
     httpclient = urllib3.PoolManager(headers=headers)

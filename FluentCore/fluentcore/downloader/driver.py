@@ -31,4 +31,3 @@ class DownloadDriver(object):
     @abc.abstractmethod
     def download(self):
         pass
-

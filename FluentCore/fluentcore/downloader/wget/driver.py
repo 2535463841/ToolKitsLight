@@ -5,8 +5,6 @@ from fluentcore.downloader import driver
 
 LOG = log.getLogger(__name__)
 
-DEFAULT_WORKERS = 10
-
 
 class WgetDriver(driver.DownloadDriver):
     WGET = '/usr/bin/wget'
