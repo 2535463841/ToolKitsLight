@@ -2,7 +2,7 @@ import logging
 from logging import handlers
 
 _DEFAULT_LEVEL = logging.INFO
-_DEFAULT_FORMAT = '%(asctime)s %(levelname)s %(module)s:%(lineno)s %(message)s'
+_DEFAULT_FORMAT = '%(asctime)s %(levelname)s %(name)s:%(lineno)s %(message)s'
 _DEFAULT_FILE = None
 _DEFAULT_MAX_BYTES = None
 _DEFAULT_BACKUP_COUNT = None

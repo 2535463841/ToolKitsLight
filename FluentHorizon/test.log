@@ -1,0 +1,15 @@
+2021-05-17 22:13:59,394 INFO server:52 strarting server
+2021-05-17 22:14:02,162 INFO views:94 request action: list_servers, {}
+2021-05-17 22:14:02,163 DEBUG views:95 request action: list_servers, {}
+2021-05-17 22:14:07,164 INFO views:94 request action: list_servers, {}
+2021-05-17 22:14:07,164 DEBUG views:95 request action: list_servers, {}
+2021-05-17 22:14:12,175 INFO views:94 request action: list_servers, {}
+2021-05-17 22:14:12,176 DEBUG views:95 request action: list_servers, {}
+2021-05-17 22:18:58,376 INFO server:52 strarting server
+2021-05-17 22:19:00,068 INFO server:52 strarting server
+2021-05-17 22:21:24,364 INFO server:52 strarting server
+2021-05-17 22:21:26,127 INFO server:52 strarting server
+2021-05-17 22:21:27,172 INFO views:94 request action: list_servers, {}
+2021-05-17 22:21:27,172 DEBUG views:95 request action: list_servers, {}
+2021-05-17 22:21:32,175 INFO views:94 request action: list_servers, {}
+2021-05-17 22:21:32,175 DEBUG views:95 request action: list_servers, {}

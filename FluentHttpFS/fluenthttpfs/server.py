@@ -5,6 +5,7 @@ import argparse
 
 from fluentcore import net
 from fluentcore.common import log
+
 from fluenthttpfs import manager
 from fluenthttpfs import views
 
@@ -38,7 +39,7 @@ class HttpServer:
 
     def start(self, debug=False):
         self.pre_start()
-        LOG.info('strarting server')
+        LOG.info('strarting server, debug=%s', debug)
         self.app.run(host=self.host, port=self.port, debug=debug)
 
 
@@ -73,11 +74,14 @@ def main():
     parser.add_argument('-P', '--path', help="the path of backend")
     parser.add_argument('-p', '--port', type=int, default=80,
                         help="the port of server, default 80")
+    parser.add_argument('--development', action='store_true',
+                        help="run server as development mode")
     args = parser.parse_args()
     if args.debug:
         log.set_default(level=logging.DEBUG)
     server = HttpFsServer(fs_root=args.path, port=args.port)
-    server.start(debug=True)
+
+    server.start(debug=args.development)
 
 
 if __name__ == '__main__':

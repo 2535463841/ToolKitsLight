@@ -1,5 +1,7 @@
 import os
 import bs4
+import urllib3
+
 from fluentcore.common import log
 from fluentcore.downloader.urllib import driver as urllib_driver
 from fluentcore.downloader.wget import driver as wget_driver
@@ -10,10 +12,12 @@ SCHEME = 'http'
 HOST = 'www.bingimg.cn'
 FILE_NAME_MAX_SIZE = 50
 
+URL_GET_IMAGES_PAGE = '{scheme}://{host}/list{page}'
+
 
 class BingImagDownloader:
 
-    def __init__(self, host=None, scheme=None, headers=None,):
+    def __init__(self, host=None, scheme=None, headers=None):
         self.scheme = scheme or SCHEME
         self.host = host or HOST
         self.headers = headers or self.default_headers
@@ -33,7 +37,7 @@ class BingImagDownloader:
         }
 
     def download(self, page, download_dir=None, resolution=None,
-                 workers=None, process=False, timeout=None, use_wget=False):
+                 workers=None, progress=False, timeout=None, use_wget=False):
         """download images found in page
 
         page : int
@@ -42,44 +46,38 @@ class BingImagDownloader:
             the resolution of image to download, by default None
         threads : int, optional
             download threads, if None, save, by default None
-        process : bool, optional
-            show process, by default False
+        progress : bool, optional
+            show progress, by default False
         """
-        download_driver = urllib_driver.Urllib3Driver(
-            download_dir=download_dir,
-            headers=self.headers,
-            timeout=timeout,
-            workers=workers,
-            process=process)
-        # request page and find all img links
-        img_links = self.find_all_links(page, download_driver.http,
-                                        resolution=resolution)
-        LOG.info('found %s links in page %s.', len(img_links), page)
-
         if use_wget:
-            driver = wget_driver.WgetDriver(workers=workers)
-            driver.download_urls(img_links)
+            driver = wget_driver.WgetDriver(download_dir=download_dir,
+                                            timeout=timeout,
+                                            workers=workers,
+                                            progress=progress)
         else:
-            driver = download_driver
+            driver = urllib_driver.Urllib3Driver(headers=self.headers,
+                                                 download_dir=download_dir,
+                                                 timeout=timeout,
+                                                 workers=workers,
+                                                 progress=progress)
+
+        img_links = self.find_all_links(page, resolution=resolution)
+        LOG.info('found %s links in page %s.', len(img_links), page)
         driver.download_urls(img_links)
 
-    def download_use_wget(self, link):
-        LOG.debug('Start to download ... %s', link)
-        os.system('wget {0}'.format(link))
-
     def get_page_url(self, page):
-        return '{}://{}/list{}'.format(self.scheme, self.host, page)
+        return URL_GET_IMAGES_PAGE.format(scheme=self.scheme,
+                                          host=self.host,page=page)
 
-    def find_all_links(self, page, httpclient, resolution=None):
+    def find_all_links(self, page, resolution=None):
+        httpclient = urllib3.PoolManager(headers=self.headers)
         resp = httpclient.request('GET', self.get_page_url(page))
         if resp.status != 200:
-            raise Exception('http reqeust failed, %s' % resp.data)
+            raise Exception('get web page failed, %s' % resp.data)
         html = bs4.BeautifulSoup(resp.data, features="html.parser")
         img_links = []
         for link in html.find_all(name='a'):
-            if not link.get('href').endswith('.jpg'):
-                continue
-            if resolution and resolution not in link.get('href'):
-                continue
-            img_links.append(link.get('href'))
+            if link.get('href').endswith('.jpg') and (
+               not resolution or resolution in link.get('href')):
+                img_links.append(link.get('href'))
         return img_links

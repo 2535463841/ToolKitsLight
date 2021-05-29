@@ -1,5 +1,4 @@
 import os
-from concurrent import futures
 
 from fluentcore.common import log
 from fluentcore.downloader import driver
@@ -10,7 +9,12 @@ DEFAULT_WORKERS = 10
 
 
 class WgetDriver(driver.DownloadDriver):
+    WGET = '/usr/bin/wget'
 
     def download(self, url):
-        LOG.debug('Start to download ... %s', url)
-        os.system('wget {0}'.format(url))
+        cmd = [self.WGET, url, '-P', self.download_dir,
+               '--timeout', str(self.timeout)]
+        LOG.debug('Run cmd: %s', cmd)
+        if not self.progress:
+            cmd.append('-q')
+        os.system(' '.join(cmd))
