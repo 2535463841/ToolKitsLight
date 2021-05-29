@@ -34,7 +34,7 @@ class FSManager:
                 'modify_time': date.parse_timestamp2str(
                     pathstat.st_mtime, '%Y/%m/%d %H:%M'),
                 'type': 'folder' if stat.S_ISDIR(pathstat.st_mode) else 'file',
-        }
+                }
 
     def editable(self, path):
         abs_path = self.get_abs_path(path)

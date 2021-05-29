@@ -3,6 +3,7 @@
 var app = new Vue({
     el: '#app',
     data: {
+        name: 'network',
         server: {name: '', version: ''},
         children: [],
         historyPath: [],
@@ -60,11 +61,6 @@ var app = new Vue({
             memory: {used: 0, total: 0},
         },
         auth: {},
-        instanceQuota: new ChartPieUsed('instancesQuota', translate('instances')),
-        vcpuQuota: new ChartPieUsed('vcpuQuota', translate('CPU')),
-        ramQuota: new ChartPieUsed('ramQuota', translate('RAM')),
-        fipQuota: new ChartPieUsed('fipQuota', translate('fip')),
-        sgQuota: new ChartPieUsed('sgQuota', translate('sg')),
         usedCpu: 0,
         usedRam: 0
     },
@@ -338,28 +334,6 @@ var app = new Vue({
         },
 
         draw: function(){
-            this.instanceQuota.refresh({
-                'Used': this.resources.servers.length,
-                'Avalialble': this.resources.quotas.instances - this.resources.servers.length});
-
-            let usedCpu = 0, usedRam = 0;
-            this.resources['servers'].forEach(function(item) {
-                usedCpu += item.flavor.vcpus;
-                usedRam += item.flavor.ram;
-            });
-            this.vcpuQuota.refresh({
-                'Used': usedCpu,
-                'Avalialble': this.resources.quotas.cores - usedCpu});
-            this.ramQuota.refresh({
-                'Used': usedRam,
-                'Avalialble': this.resources.quotas.ram - usedRam});
-
-            this.fipQuota.refresh({
-                'Used': this.resources.floatingips.length,
-                'Avalialble': this.resources.quotas.floating_ips - this.resources.floatingips.length});
-            this.sgQuota.refresh({
-                'Used': this.resources.security_groups.length,
-                'Avalialble': this.resources.quotas.security_groups - this.resources.security_groups.length});
         },
         getImage: function(image_id){
             for(let i=0; i< this.resources.images; i++ ){
@@ -374,41 +348,25 @@ var app = new Vue({
     mounted: function() {
         this.getServerInfo();
         this.getAuthInfo();
-        this.listResource('services');
-        this.listResource('endpoints');
-        this.listResource('users');
-        this.listResource('projects');
-        this.listResource('keypairs');
+
         // this.listResource('floatingips');
         this.listResource('security_groups');
-        this.listResource('quotas');
-        this.listResource('images');
 
-        this.listResource('flavors');
-        this.listResource('servers');
         this.listResource('networks');
         this.listResource('subnets');
         // this.listResource('routers');
         this.listResource('ports');
-        this.listResource('hypervisors');
         var self = this;
 
-        this.instanceQuota.init();
-        this.vcpuQuota.init();
-        this.ramQuota.init();
-        this.fipQuota.init();
-        this.sgQuota.init();
+        // self.intervalId = setInterval(function(){
+        //     // self.listResource('hypervisors');
+        //     if(self.failedTimes >= 3){
+        //         self.logError(`list resources failed ${self.failedTimes}, stop ${self.intervalId}`);
+        //         clearInterval(self.intervalId);
+        //     }
+        // }, 5000);
 
-        self.intervalId = setInterval(function(){
-            // self.listResource('hypervisors');
-            self.listResource('servers');
-            if(self.failedTimes >= 3){
-                self.logError(`list resources failed ${self.failedTimes}, stop ${self.intervalId}`);
-                clearInterval(self.intervalId);
-            }
-        }, 5000);
-
-        setInterval(function(){self.draw();}, 2000);
+        // setInterval(function(){self.draw();}, 2000);
 
         // Vue.prototype.$echarts = echarts;
     }

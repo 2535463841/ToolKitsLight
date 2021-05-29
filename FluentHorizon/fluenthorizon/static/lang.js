@@ -72,11 +72,21 @@ var DIRECOTRY = {
     deleteFlavor: {en: 'delete flavor', zh: '删除规格'},
     updateMetadata: {en: 'update metadata', zh: '更新元数据'},
 
-    keypairs: {en: 'keypairs', zh: '规格'},
+    keypairs: {en: 'keypairs', zh: '密钥对'},
     createKeypair: {en: 'create keypair', zh: '新建keypair'},
     deleteKeypair: {en: 'delete keypair', zh: '删除keypair'},
     deleteKeypairs: {en: 'delete keypair', zh: '删除keypair'},
     importPublicKey: {en: 'import public key', zh: '导入公钥'},
+
+    CPU: {en: 'CPU', zh: 'CPU'},
+    RAM: {en: 'RAM', zh: '内存'},
+    fip: {en: 'floating ip', zh: '浮动IP'},
+    sg: {en: 'security group', zh: 'CPU'},
+
+    overreview: {en: 'overreview', zh: '概览'},
+    hypervisors: {en: 'hypervisors', zh: '虚拟化'},
+    limitSumary: {en: 'Limit Sumary', zh: '配额摘要'},
+
 };
 var SUPPORT_LANG = ['en', 'zh'];
 

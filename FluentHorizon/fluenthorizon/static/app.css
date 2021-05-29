@@ -1,5 +1,14 @@
 .bd-active {
     border: 1px solid #eee;
-    border-left-width: .25rem;
-    border-left-color: red;
+    /* border-left-width: .25rem; */
+    /* border-bottom-color: red; */
+    border-radius: 0%;
+}
+
+.nav-item-active {
+    /* border: 1px solid #eee; */
+    /* border-left-width: .25rem; */
+    /* border-bottom-color: red; */
+    font-weight: bold;
+    border-radius: 0%;
 }

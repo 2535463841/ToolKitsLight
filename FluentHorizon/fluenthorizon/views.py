@@ -1,15 +1,11 @@
-import os
-import json
 import flask
-
-from urllib import parse
+import json
 
 from flask import views
 from flask import current_app
 from flask import session
 
 from fluentcore.common import log
-from fluentcore import fs
 
 from openstack import client
 
@@ -23,6 +19,13 @@ _CACHE_IMAGES = {}
 _CACHE_FLAVORS = {}
 _CACHE_PROJECTS = {}
 
+SERVER_NAME = 'FLuentHorizon'
+VERSION = 1.0
+
+DEFAULT_CONTEXT = {
+    'name': SERVER_NAME,
+    'version': VERSION,
+}
 
 def get_client():
     auth = session.get('auth')
@@ -53,10 +56,17 @@ class HomeView(views.MethodView):
         return flask.redirect('/login')
 
 
+class HtmlView(views.MethodView):
+
+    def get(self, name):
+        return flask.render_template('{}.html'.format(name),
+                                     **DEFAULT_CONTEXT)
+
+
 class IndexView(views.MethodView):
 
     def get(self):
-        return flask.render_template('index.html')
+        return flask.render_template('index.html', **DEFAULT_CONTEXT)
 
 
 class ActionView(views.MethodView):
@@ -134,9 +144,7 @@ class ActionView(views.MethodView):
         items = []
         columns = ['id', 'enabled', 'name']
         for item in get_client().keystone.users.list():
-            items.append(
-                {k: getattr(item, k) for k in columns}
-            )
+            items.append({k: getattr(item, k) for k in columns})
         return {'users': items}
 
     def list_networks(self, **params):
@@ -284,7 +292,7 @@ class ServerView(views.MethodView):
 class LoginView(views.MethodView):
 
     def get(self):
-        return flask.render_template('login.html')
+        return flask.render_template('login.html', **DEFAULT_CONTEXT)
 
     def post(self):
         data = flask.request.get_data()

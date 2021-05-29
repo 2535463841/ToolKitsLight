@@ -125,7 +125,7 @@ class ChartPieUsed {
                 title: {text: title, left: 'center'},
                 tooltip: {trigger: 'item'},
                 series: [{
-                    name: title, type: 'pie', radius: '50%',
+                    name: title, type: 'pie', radius: '80%',
                     color:[color, 'rgb(206, 206, 206)'],
                     label: {show: false},
                     data: data,
@@ -137,17 +137,27 @@ class ChartPieUsed {
                     }},
                 ]
             });
-        }
+        };
+        this.init = function(){
+            let elem = document.getElementById(this.elemId);
+            this.chart = echarts.init(elem);
+        };
+        this.reset = function(){
+            this.chart = null;
+        };
         this.refresh = function(data){
-            if (this.chart == null){
-                this.chart = echarts.init(document.getElementById(this.elemId));
+            let elem = document.getElementById(this.elemId);
+            if (elem == null){
+                return
             }
+            if (this.chart == null){
+                this.chart = echarts.init(elem);
+            };
             var dataList = [];
             for (var key in data) {
                 let value = data[key];
                 dataList.push({value: value, name: key});
             }
-            console.log(dataList);
             this.setData(dataList);
         }
     }

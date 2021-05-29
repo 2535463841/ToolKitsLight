@@ -285,21 +285,8 @@ var app = new Vue({
                 }
             )
         },
-        getServerInfo: function(){
-            var self = this;
-            this.wetoolFS.getServerInfo(
-                function(status, data){
-                    if (status == 200) {
-                        self.server = data.server;
-                    } else {
-                        self.logError(`请求失败, ${status}, ${data.error}`, autoHideDelay = 5000)
-                    }
-                }
-            );
-        },
     },
     created: function () {
-        this.getServerInfo();
         this.goTo(-1);
         // this.changeDirectory('', pushHistory = true);
     }

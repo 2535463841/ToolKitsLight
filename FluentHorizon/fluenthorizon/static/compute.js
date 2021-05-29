@@ -3,6 +3,7 @@
 var app = new Vue({
     el: '#app',
     data: {
+        name: 'compute',
         server: {name: '', version: ''},
         children: [],
         historyPath: [],
@@ -32,13 +33,7 @@ var app = new Vue({
         usageStart: 0,
         usageEnd: 0,
         display: 'overreview',
-        menuTree: {
-            project: ['api_access'],
-            identity: ['projects', 'users', 'services', 'endpoints'],
-            compute: ['overreview', 'instances', 'hypervisors', 'images', 'flavors'],
-            networking: ['routers', 'networks', 'subnets', 'ports'],
-            settings: ['userSettings', 'changePassword'],
-        },
+        menuTree: ['overreview', 'instances', 'hypervisors', 'images', 'flavors'],
         users: [],
         projects: [],
         services: [],
@@ -101,135 +96,7 @@ var app = new Vue({
                 autoHideDelay: autoHideDelay
             });
         },
-        refreshChildren: function () {
-            this.logDebug('更新目录');
-            this.goTo(this.pathItems.length - 1);
-        },
-        getAbsPath: function (child) {
-            if (absPath == '/') {
-                absPath += child.name;
-            } else {
-                absPath += '/' + child.name;
-            }
-            return absPath;
-        },
-        clickPath: function (child) {
-            if (child.type != "folder") {
-                return
-            }
-            var self = this;
-            let pathItems = self.getPathText(self.pathItems).concat(child.name);
 
-            this.wetoolFS.listDir(
-                pathItems, self.showAll,
-                function (status, data) {
-                    if (status == 200) {
-                        self.pathItems.push({text: child.name, href: '#' })
-                        self.children = data.dir.children;
-                        self.diskUsage = data.dir.disk_usage;
-                    } else {
-                        self.logError(`请求失败，${status}, ${data.error}`);
-                    }
-                }
-            );
-        },
-        getPathText: function(pathItems){
-            let pathText = [];
-            pathItems.forEach(function(item) {
-                pathText.push(item.text);
-            });
-            return pathText;
-        },
-        goTo: function (clickIndex) {
-            var self = this;
-            self.showPardir = false;
-            let pathItems = self.getPathText(getItemsBefore(self.pathItems, clickIndex));
-            this.wetoolFS.listDir(
-                pathItems, self.showAll,
-                function (status, data) {
-                    if (status == 200) {
-                        delItemsAfter(self.pathItems, clickIndex);
-                        self.children = data.dir.children;
-                        self.diskUsage = data.dir.disk_usage;
-                    } else {
-                        self.logError(`请求失败，${status}, ${data.error}`);
-                    }
-                }
-            );
-        },
-        showQrcode: function (child) {
-            this.downloadFile = child;
-        },
-        getDownloadUrl: function (item) {
-            let urlParams = [];
-            item.pardir.forEach(function(dir) {
-                urlParams.push(`path_list=${dir}`);
-            });
-            return `/download/${encodeURIComponent(item.name)}?${urlParams.join('&')}`
-        },
-        toggleShowAll: function () {
-            this.showAll = !this.showAll;
-            this.refreshChildren();
-        },
-        renameDir: function () {
-            var self = this;
-            if (self.renameItem.name == self.renameItem.newName) {
-                return;
-            }
-            if (self.renameItem.newName == '') {
-                self.logError('文件名不能为空');
-                return;
-            }
-            this.wetoolFS.renameDir(
-                self.renameItem.name, self.getPathText(self.pathItems), self.renameItem.newName,
-                function (status, data) {
-                    if (status == 200) {
-                        self.logInfo('重命名成功');
-                        self.refreshChildren();
-                    } else {
-                        self.logError(`重命名失败, ${status}, ${data.error}`, autoHideDelay = 5000)
-                    }
-                },
-                function () {
-                    self.logError('请求失败')
-                }
-            )
-        },
-        showRenameModal: function (item) {
-            this.renameItem = { name: item.name, newName: item.name }
-        },
-
-        showFileModal: function (item) {
-            var self = this;
-            self.wetoolFS.getFileContent(
-                self.getPathText(self.pathItems), item.name,
-                function (status, data) {
-                    if (status == 200) {
-                        self.fileEditor = data.file;
-                    } else {
-                        self.logError(`文件内容获取失败, ${status}, ${data.error}`, autoHideDelay = 5000)
-                    }
-                },
-                function () {
-                    self.logError('请求失败');
-                }
-            )
-        },
-        updateFile: function () {
-            this.logError('文件修改功能未实现');
-        },
-        getServerInfo: function(){
-            var self = this;
-            this.wetoolFS.getServerInfo(
-                function(status, data){
-                    if (status == 200) {
-                        self.server = data.server;
-                    } else {
-                        self.logError(`请求失败, ${status}, ${data.error}`, autoHideDelay = 5000)
-                    }
-                }
-            );
-        },
         changeDisplay: function(name) {
             this.display = name;
             if (this.display != 'overreview'){
@@ -336,7 +203,6 @@ var app = new Vue({
                 }
             }
         },
-
         draw: function(){
             this.instanceQuota.refresh({
                 'Used': this.resources.servers.length,
@@ -372,32 +238,18 @@ var app = new Vue({
         }
     },
     mounted: function() {
-        this.getServerInfo();
         this.getAuthInfo();
         this.listResource('services');
         this.listResource('endpoints');
         this.listResource('users');
         this.listResource('projects');
         this.listResource('keypairs');
-        // this.listResource('floatingips');
-        this.listResource('security_groups');
         this.listResource('quotas');
         this.listResource('images');
-
         this.listResource('flavors');
         this.listResource('servers');
-        this.listResource('networks');
-        this.listResource('subnets');
-        // this.listResource('routers');
-        this.listResource('ports');
         this.listResource('hypervisors');
         var self = this;
-
-        this.instanceQuota.init();
-        this.vcpuQuota.init();
-        this.ramQuota.init();
-        this.fipQuota.init();
-        this.sgQuota.init();
 
         self.intervalId = setInterval(function(){
             // self.listResource('hypervisors');
@@ -409,7 +261,5 @@ var app = new Vue({
         }, 5000);
 
         setInterval(function(){self.draw();}, 2000);
-
-        // Vue.prototype.$echarts = echarts;
     }
 });

@@ -6,4 +6,3 @@
 .vscode
 readme.ipynb
 *.ipynb
-core/wetool/httpfs/static/*/*

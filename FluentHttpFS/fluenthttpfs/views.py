@@ -14,6 +14,14 @@ from fluentcore import fs
 LOG = log.getLogger(__name__)
 FS_CONTROLLER = None
 
+SERVER_NAME = 'FluentHttpFS'
+VERSION = 1.0
+
+DEFAULT_CONTEXT = {
+    'name': SERVER_NAME,
+    'version': VERSION
+}
+
 
 def get_json_response(data, status=200):
     return flask.Response(json.dumps(data), status=status)
@@ -28,7 +36,7 @@ class HomeView(views.MethodView):
 class IndexView(views.MethodView):
 
     def get(self):
-        return flask.render_template('index.html')
+        return flask.render_template('index.html', **DEFAULT_CONTEXT)
 
 
 class QrcodeView(views.MethodView):
@@ -111,7 +119,7 @@ class ActionView(views.MethodView):
         params = action.get('params')
         LOG.debug('request action: %s, %s', name, params)
         if name not in self.ACTION_MAP:
-            msg = 'action %s is not supported'.format(name)
+            msg = 'action {} is not supported'.format(name)
             return get_json_response({'error': msg}, status=400)
         try:
             resp_body = getattr(self, name)(params)
@@ -222,13 +230,3 @@ class FaviconView(views.MethodView):
     def get(self):
         return flask.send_from_directory(current_app.static_folder,
                                          'httpfs.png')
-
-
-class ServerView(views.MethodView):
-
-    def get(self):
-        return {'server': {
-            'name': 'FluentHttpFS',
-            'version': '1.0'
-            }
-        }

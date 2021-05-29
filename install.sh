@@ -37,9 +37,13 @@ case ${osType} in
 	apt-cache show python-dev > /dev/null
     [ $? -ne 0 ] && sudo apt-get install python-dev 
     [ $? -ne 0 ] || exit 1
+
+    apt-cache show python-zbar  > /dev/null
+    [ $? -ne 0 ] && sudo apt-get install python-zbar
+    [ $? -ne 0 ] || exit 1
     ;;
     centos)
-        rpm -qa python-devel > /dev/null || yum install -y python-devel || exit 1
+        rpm -qa python-devel > /dev/null || yum install -y python-devel || yum install python-zbar || exit 1
         ;;
     *)
         ;;
