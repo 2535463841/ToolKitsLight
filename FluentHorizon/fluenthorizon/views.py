@@ -59,8 +59,13 @@ class HomeView(views.MethodView):
 class HtmlView(views.MethodView):
 
     def get(self, name):
+<<<<<<< HEAD
         return flask.render_template('{}.html'.format(name),
                                      **DEFAULT_CONTEXT)
+=======
+        print('xxx', name)
+        return flask.render_template('{}.html'.format(name))
+>>>>>>> 4febe160da06f0f6764724f3e03056f2a807f618
 
 
 class IndexView(views.MethodView):
