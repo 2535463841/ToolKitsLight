@@ -21,6 +21,17 @@ class SSHOutput(object):
             else self.stdout.decode('utf-8')
 
 
+class RemoteCmd(object):
+    
+    def __init__(self, cmd, host, user, port=22, password=None, timeout=60):
+        self.cmd = cmd
+        self.host = host
+        self.user = user
+        self.port = port
+        self.password = password
+        self.timeout = timeout
+
+
 class SSHClient(object):
 
     def __init__(self, host, user, password, port=None, timeout=None):
@@ -79,3 +90,12 @@ class SSHClient(object):
         LOG.info('put %s -> %s', local_file, save_path)
         sftp.put(local_file, save_path)
         sftp.close()
+
+
+def run_cmd_on_host(remote_cmd):
+    ssh_client = SSHClient(remote_cmd.host, remote_cmd.user,
+                            remote_cmd.password,
+                            port=remote_cmd.port,
+                            timeout=remote_cmd.timeout)
+    return ssh_client.ssh(remote_cmd.cmd)
+

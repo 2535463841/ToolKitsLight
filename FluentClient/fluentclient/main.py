@@ -18,7 +18,6 @@ def main():
         return 1
 
     if args.debug:
-        LOG.setLevel(logging.DEBUG)
         log.set_default(level=logging.DEBUG)
 
     try:
