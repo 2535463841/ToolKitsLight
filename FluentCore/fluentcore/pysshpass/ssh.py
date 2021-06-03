@@ -1,7 +1,8 @@
 #! /usr/bin/python
 from __future__ import print_function
-import os
+import getpass
 import logging
+import os
 import paramiko
 
 LOG = logging.getLogger(__name__)
@@ -21,15 +22,29 @@ class SSHOutput(object):
             else self.stdout.decode('utf-8')
 
 
-class RemoteCmd(object):
-    
-    def __init__(self, cmd, host, user, port=22, password=None, timeout=60):
-        self.cmd = cmd
+class SSHRequest(object):
+
+    def __init__(self, host, user=None, port=22, password=None, timeout=60):
         self.host = host
-        self.user = user
+        self.user = user or getpass.getuser()
         self.port = port
         self.password = password
         self.timeout = timeout
+
+
+class CmdRequest(SSHRequest):
+
+    def __init__(self, cmd, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.cmd = cmd
+
+
+class ScpRequest(object):
+
+    def __init__(self, local, remote, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.local = local
+        self.remove = remote or './'
 
 
 class SSHClient(object):
@@ -92,10 +107,10 @@ class SSHClient(object):
         sftp.close()
 
 
-def run_cmd_on_host(remote_cmd):
-    ssh_client = SSHClient(remote_cmd.host, remote_cmd.user,
-                            remote_cmd.password,
-                            port=remote_cmd.port,
-                            timeout=remote_cmd.timeout)
-    return ssh_client.ssh(remote_cmd.cmd)
+def run_cmd_on_host(request):
+    ssh_client = SSHClient(request.host, request.user,
+                           request.password,
+                           port=request.port,
+                            timeout=request.timeout)
+    return ssh_client.ssh(request.cmd)
 

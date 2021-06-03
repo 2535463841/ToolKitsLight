@@ -1,4 +1,5 @@
 import os
+import re
 import socket
 import paramiko
 import time
@@ -12,6 +13,7 @@ from fluentclient import base
 
 LOG = log.getLogger(__name__)
 
+RE_CONNECTION = re.compile(r'((.*)@){0,1}([^:]+)(:(.*)){0,1}')
 
 BASE_SSH_ARGUMENTS = base.BASE_ARGUMENTS + [
     cliparser.Argument('-T', '--get_pty',
@@ -32,43 +34,44 @@ BASE_SSH_ARGUMENTS = base.BASE_ARGUMENTS + [
 ]
 
 
-def get_connect_info(connect_info):
-    
+def support_tqdm():
+    try:
+        import tqdm
+        return True
+    except ImportError:
+        LOG.warning('tqdm is not installed')
+    return False
+
+
+def parse_connect_info(connect_info):
     """
-    Param: connection_info:
-           e.g. root@localhost:/tmp
-    Return: user, host, remote_path:
-            e.g. root, localhost, /tmp
+    Param: 
+        connection_info: e.g. root@localhost:/tmp
+    Return:
+        user, host, remote_path: e.g. root, localhost, /tmp
     """
-    import getpass
-    user_host_info = connect_info.split('@')
-
-    if len(user_host_info) < 2:
-        user, host_path = getpass.getuser(), user_host_info[0].split(':')
-    else:
-        user, host_path = user_host_info[0], user_host_info[1].split(':')
-    host = host_path[0]
-    remote_path = './' if len(host_path) < 2 else host_path[1]
-    LOG.debug('user=%s, host=%s, remote_path=%s', user, host, remote_path)
-    return {'name': host, 'user': user, 'path': remote_path}
+    matched = RE_CONNECTION.match(connect_info)
+    # NOTE: Example 'root@localhost:/tmp' will be parsed as
+    # ('root@', 'root', 'localhost', ':/tmp', '/tmp')
+    LOG.debug('regex match user=%s, host=%s, remote_path=%s',
+            matched.group(2), matched.group(3), matched.group(5))
+    return matched.group(2), matched.group(3), matched.group(5)
 
 
-def get_connect_info_from_file(file_path, port=22, password=None):
+def parse_connect_info_from_file(file_path, port=22, password=None):
     with open(file_path) as f:
         lines = f.readlines()
-    hosts = []
     for line in lines:
         line = line.strip()
         if not line or line.startswith('#'):
             continue
         columns = line.split()
-        host = get_connect_info(columns[0])
-        host.update(port=port, password=password)
+        user, host, remote_path = parse_connect_info(columns[0])
+        options = {}
         for col in columns[1:]:
             key, value = col.split('=')
-            host[key] = int(value) if key == 'port' else value
-        hosts.append(host)
-    return hosts
+            options[key] = value
+        yield user, host, remote_path, options
 
 
 @cliparser.register_cli(base.SUB_CLI_PARSER)
@@ -103,29 +106,42 @@ class SSHCmd(cliparser.CliBase):
         worker = worker or len(remote_cmd_list)
         LOG.info('run cmd on %s hosts, worker is %s',
                  len(remote_cmd_list), worker)
+        results = []
+        pbar = None
+        if support_tqdm():
+            from tqdm import tqdm
+            pbar = tqdm(total=len(remote_cmd_list))
         with futures.ThreadPoolExecutor(worker) as executor:
             for result in executor.map(self.run_cmd_on_host, remote_cmd_list):
-                print('===== {} ====='.format(result.get('host')))
-                print(result.get('output'))
+                results.append(result)
+                if pbar:
+                    pbar.update(1)
+        if pbar:
+            pbar.close()
+        for result in results:
+            print('===== {} ====='.format(result.get('host')))
+            print(result.get('output'))
 
     def __call__(self, args):
+        requests = []
         if os.path.isfile(args.host):
-            hosts = get_connect_info_from_file(args.host,
-                                               port=args.port,
-                                               password=args.password)
+            for user, host, _, options in \
+                parse_connect_info_from_file(args.host):
+                req = ssh.CmdRequest(args.command, host, user=user,
+                                     password=options.get('password',
+                                                          args.password),
+                                     port=options.get('port', args.port),
+                                     timeout=args.timeout)
+                requests.append(req)
         else:
-            host = get_connect_info(args.host)
-            host.update(port=args.port, password=args.password)
-            hosts = [host]
-        remote_cmd_list = [
-            ssh.RemoteCmd(args.command, h['name'], h['user'],
-                          port=h.get('port'),
-                          password=h.get('password'),
-                          timeout=args.timeout
-            ) for h in hosts
-        ]
+            user, host, _ = parse_connect_info(args.host)
+            req = ssh.CmdRequest(args.command, host, user=user,
+                                 password=args.password,
+                                 port=args.port, timeout=args.timeout)
+            requests.append(req)
+
         start_time = time.time()
-        self.run_cmd_on_hosts(remote_cmd_list, worker=args.worker)
+        self.run_cmd_on_hosts(requests, worker=args.worker)
         spend = time.time() - start_time
         LOG.info('Spend %.2f seconds total', spend)
 
@@ -142,7 +158,7 @@ class ScpGet(cliparser.CliBase):
         try:
             if ':' not in args.remote_file:
                 raise Exception('remote file must be set')
-            user, host, remote_path = get_connect_info(args.remote_file)
+            user, host, remote_path = parse_connect_info(args.remote_file)
             if not remote_path:
                 raise Exception('remote path is none')
             ssh_client = ssh.SSHClient(host, user, args.password,
@@ -169,7 +185,7 @@ class ScpPut(cliparser.CliBase):
 
     def __call__(self, args):
         try:
-            user, host, remote_path = get_connect_info(args.remote_path)
+            user, host, remote_path = parse_connect_info(args.remote_path)
             ssh_client = ssh.SSHClient(host, user, args.password,
                                        port=args.port,
                                        timeout=args.timeout)
