@@ -14,7 +14,6 @@ from fluentclient import base
 LOG = log.getLogger(__name__)
 
 RE_CONNECTION = re.compile(r'((.*)@){0,1}([^:]+)(:(.*)){0,1}')
-
 BASE_SSH_ARGUMENTS = base.BASE_ARGUMENTS + [
     cliparser.Argument('-T', '--get_pty',
                        action='store_true', help='if set, use pty'),
@@ -30,7 +29,7 @@ BASE_SSH_ARGUMENTS = base.BASE_ARGUMENTS + [
                        help='The password for login, default is "". It will be'
                             ' overwrited if set password=<PASSWORD> in file.'),
     cliparser.Argument('-w', '--worker', type=int,
-                       help='execute worker, use hosts num if not set'),
+                       help='Execute worker, use hosts num if not set'),
 ]
 
 
@@ -85,34 +84,34 @@ class SSHCmd(cliparser.CliBase):
         cliparser.Argument('command', help='The command to execute')
     ] + BASE_SSH_ARGUMENTS
 
-    def run_cmd_on_host(self, remote_cmd):
+    def run_cmd_on_host(self, cmd_request):
         try:
-            LOG.debug('run cmd on host %s', remote_cmd.host)
-            output = ssh.run_cmd_on_host(remote_cmd)
+            LOG.debug('run cmd on host %s', cmd_request.host)
+            output = ssh.run_cmd_on_host(cmd_request)
         except socket.timeout:
             LOG.error('Connect to %s:%s timeout(%s seconds)',
-                        remote_cmd.host, remote_cmd.port, remote_cmd.timeout)
-            output = 'ERROR: connect timeout'
+                        cmd_request.host, cmd_request.port, cmd_request.timeout)
+            output = 'ERROR: Connect timeout'
         except paramiko.ssh_exception.AuthenticationException:
             LOG.error('Authentication %s with "%s" failed',
-                    remote_cmd.user, remote_cmd.password)
-            output = 'ERROR: auth failed'
+                    cmd_request.user, cmd_request.password)
+            output = 'ERROR: Auth failed, password is correct? (-p <PASSWORD>)'
         except Exception as e:
             LOG.error(e)
             output = e
-        return {'host': remote_cmd.host, 'output': output}
+        return {'host': cmd_request.host, 'output': output}
 
-    def run_cmd_on_hosts(self, remote_cmd_list, worker=None):
-        worker = worker or len(remote_cmd_list)
+    def run_cmd_on_hosts(self, cmd_requests, worker=None):
+        worker = worker or len(cmd_requests)
         LOG.info('run cmd on %s hosts, worker is %s',
-                 len(remote_cmd_list), worker)
+                 len(cmd_requests), worker)
         results = []
         pbar = None
         if support_tqdm():
             from tqdm import tqdm
-            pbar = tqdm(total=len(remote_cmd_list))
+            pbar = tqdm(total=len(cmd_requests))
         with futures.ThreadPoolExecutor(worker) as executor:
-            for result in executor.map(self.run_cmd_on_host, remote_cmd_list):
+            for result in executor.map(self.run_cmd_on_host, cmd_requests):
                 results.append(result)
                 if pbar:
                     pbar.update(1)
@@ -127,7 +126,8 @@ class SSHCmd(cliparser.CliBase):
         if os.path.isfile(args.host):
             for user, host, _, options in \
                 parse_connect_info_from_file(args.host):
-                req = ssh.CmdRequest(args.command, host, user=user,
+                req = ssh.CmdRequest(args.command, host,
+                                     user=user or args.user,
                                      password=options.get('password',
                                                           args.password),
                                      port=options.get('port', args.port),
@@ -150,51 +150,165 @@ class SSHCmd(cliparser.CliBase):
 class ScpGet(cliparser.CliBase):
     NAME = 'scp-get'
     ARGUMENTS = [
-        cliparser.Argument('remote_file', help='The remote file to get.'),
-        cliparser.Argument('local_path', help='The local path to save.')
+        cliparser.Argument('host',
+                           help='The remote host to connect, string or file'),
+        cliparser.Argument('--remote', help='Remote file path'),
+        cliparser.Argument('--local', default='./',
+                           help='The local path to save, defualt is ./ .')
     ] + BASE_SSH_ARGUMENTS
 
-    def __call__(self, args):
+    def download_from_host(self, scp_request):
         try:
-            if ':' not in args.remote_file:
-                raise Exception('remote file must be set')
-            user, host, remote_path = parse_connect_info(args.remote_file)
-            if not remote_path:
-                raise Exception('remote path is none')
-            ssh_client = ssh.SSHClient(host, user, args.password,
-                                       port=args.port,
-                                       timeout=args.timeout)
-            ssh_client.get(remote_path, args.local_path)
+            LOG.debug('run cmd on host %s', scp_request.host)
+            ssh.download_from_host(scp_request)
+            output = 'success'
         except socket.timeout:
             LOG.error('Connect to %s:%s timeout(%s seconds)',
-                      args.host, args.port, args.timeout)
+                      scp_request.host, scp_request.port, scp_request.timeout)
+            output = 'ERROR: connect timeout'
         except paramiko.ssh_exception.AuthenticationException:
             LOG.error('Authentication %s with "%s" failed',
-                      user, args.password)
+                    scp_request.user, scp_request.password)
+            output = 'ERROR: Auth failed, password is correct? (-p <PASSWORD>)'
         except Exception as e:
             LOG.error(e)
+            output = e
+        return {'host': scp_request.host, 'output': output}
+
+    def download_from_hosts(self, scp_requests, worker=None):
+        worker = worker or len(scp_requests)
+        LOG.info('download files from %s hosts, worker is %s', 
+                 len(scp_requests), worker)
+        results = []
+        pbar = None
+        if support_tqdm():
+            from tqdm import tqdm
+            pbar = tqdm(total=len(scp_requests))
+        with futures.ThreadPoolExecutor(worker) as executor:
+            for result in executor.map(self.download_from_host, scp_requests):
+                results.append(result)
+                if pbar:
+                    pbar.update(1)
+        if pbar:
+            pbar.close()
+        for result in results:
+            print('===== {} ====='.format(result.get('host')))
+            print(result.get('output'))
+
+    def __call__(self, args):
+        requests = []
+        if os.path.isfile(args.host):
+            for user, host, remote_path, options in \
+                parse_connect_info_from_file(args.host):
+                remote_path = remote_path or args.remote
+                if not remote_path:
+                    LOG.error('Remote path must set, error host is %s', host)
+                    return
+                req = ssh.ScpRequest(os.path.join(args.local, host),
+                                     remote_path, host,
+                                     user=user or args.user,
+                                     password=options.get('password',
+                                                          args.password),
+                                     port=options.get('port', args.port),
+                                     timeout=args.timeout)
+                requests.append(req)
+        else:
+            user, host, remote_path = parse_connect_info(args.host)
+            remote_path = remote_path or args.remote
+            if not remote_path:
+                LOG.error('Remote path must set, error host is %s', host)
+                return
+            req = ssh.ScpRequest(args.local, remote_path, host, user=user,
+                                 password=args.password,
+                                 port=args.port, timeout=args.timeout)
+            requests.append(req)
+
+        start_time = time.time()
+        self.download_from_hosts(requests, worker=args.worker)
+        spend = time.time() - start_time
+        LOG.info('Spend %.2f seconds total', spend)
 
 
 @cliparser.register_cli(base.SUB_CLI_PARSER)
 class ScpPut(cliparser.CliBase):
     NAME = 'scp-put'
     ARGUMENTS = [
-        cliparser.Argument('local_file', help='The local path to put.'),
-        cliparser.Argument('remote_path', help='The remote file to save.'),
+        cliparser.Argument('local', help='The local path to put.'),
+        cliparser.Argument('host',
+                           help='The remote host to connect, string or file'),
+        cliparser.Argument('--remote', default='./',
+                           help='The remote path to save.'),
     ] + BASE_SSH_ARGUMENTS
 
-    def __call__(self, args):
+    def upload_to_host(self, scp_request):
         try:
-            user, host, remote_path = parse_connect_info(args.remote_path)
-            ssh_client = ssh.SSHClient(host, user, args.password,
-                                       port=args.port,
-                                       timeout=args.timeout)
-            ssh_client.put(args.local_file, remote_path)
+            LOG.debug('run cmd on host %s', scp_request.host)
+            ssh.upload_to_host(scp_request)
+            output = 'success'
         except socket.timeout:
             LOG.error('Connect to %s:%s timeout(%s seconds)',
-                      args.host, args.port, args.timeout)
+                      scp_request.host, scp_request.port, scp_request.timeout)
+            output = 'ERROR: connect timeout'
         except paramiko.ssh_exception.AuthenticationException:
             LOG.error('Authentication %s with "%s" failed',
-                      user, args.password)
+                    scp_request.user, scp_request.password)
+            output = 'ERROR: Auth failed, password is correct? (-p <PASSWORD>)'
         except Exception as e:
             LOG.error(e)
+            output = e
+        return {'host': scp_request.host, 'output': output}
+
+    def upload_to_hosts(self, scp_requests, worker=None):
+        worker = worker or len(scp_requests)
+        LOG.info('run cmd on %s hosts, worker is %s', 
+                 len(scp_requests), worker)
+        results = []
+        pbar = None
+        if support_tqdm():
+            from tqdm import tqdm
+            pbar = tqdm(total=len(scp_requests))
+        with futures.ThreadPoolExecutor(worker) as executor:
+            for result in executor.map(self.upload_to_host, scp_requests):
+                results.append(result)
+                if pbar:
+                    pbar.update(1)
+        if pbar:
+            pbar.close()
+        for result in results:
+            print('===== {} ====='.format(result.get('host')))
+            print(result.get('output'))
+
+    def __call__(self, args):
+        if not os.path.exists(args.local):
+            LOG.error('Local file %s not found', args.local)
+            return
+        requests = []
+        if os.path.isfile(args.host):
+            for user, host, remote_path, options in \
+                parse_connect_info_from_file(args.host):
+                remote_path = remote_path or args.remote
+                if not remote_path:
+                    LOG.error('Remote path must set, error host is %s', host)
+                    return
+                req = ssh.ScpRequest(args.local, remote_path, host,
+                                     user=user or args.user,
+                                     password=options.get('password',
+                                                          args.password),
+                                     port=options.get('port', args.port),
+                                     timeout=args.timeout)
+                requests.append(req)
+        else:
+            user, host, remote_path = parse_connect_info(args.host)
+            remote_path = remote_path or args.remote
+            if not remote_path:
+                LOG.error('Remote path must set, error host is %s', host)
+                return
+            req = ssh.ScpRequest(args.local, remote_path, host, user=user,
+                                 password=args.password,
+                                 port=args.port, timeout=args.timeout)
+            requests.append(req)
+
+        start_time = time.time()
+        self.upload_to_hosts(requests, worker=args.worker)
+        spend = time.time() - start_time
+        LOG.info('Spend %.2f seconds total', spend)

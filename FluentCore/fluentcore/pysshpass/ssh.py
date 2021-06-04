@@ -1,11 +1,12 @@
 #! /usr/bin/python
 from __future__ import print_function
 import getpass
-import logging
 import os
 import paramiko
 
-LOG = logging.getLogger(__name__)
+from fluentcore.common import log
+
+LOG = log.getLogger(__name__)
 
 DEFAULT_PORT = 22
 DEFAULT_TIMEOUT = 60
@@ -39,12 +40,12 @@ class CmdRequest(SSHRequest):
         self.cmd = cmd
 
 
-class ScpRequest(object):
+class ScpRequest(SSHRequest):
 
     def __init__(self, local, remote, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.local = local
-        self.remove = remote or './'
+        self.local = local or './'
+        self.remote = remote or './'
 
 
 class SSHClient(object):
@@ -57,8 +58,7 @@ class SSHClient(object):
         self.timeout = timeout or DEFAULT_TIMEOUT
         self.client = paramiko.SSHClient()
         self.client.load_system_host_keys()
-        self.client.set_missing_host_key_policy(
-            paramiko.AutoAddPolicy())
+        self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
     def _connect(self):
         self.client.connect(hostname=self.host,
@@ -76,41 +76,49 @@ class SSHClient(object):
         return output
 
     def get(self, remote_file, local_path='./'):
+        if not os.path.exists(local_path):
+            LOG.debug('make dirs: %s', local_path)
+            os.makedirs(local_path)
         if os.path.isdir(local_path):
             save_path = os.path.join(local_path,
                                      os.path.basename(remote_file))
         else:
             save_path = local_path
-        LOG.info('get %s -> %s', remote_file, save_path)
-        try:
-            self._connect()
-            sftp = self.client.open_sftp()
-            with open(os.path.join(local_path, save_path), 'wb') as f:
-                sftp.getfo(remote_file, f)
-            sftp.close()
-        except IOError as e:
-            LOG.error(e)
+        LOG.debug('get %s -> %s from %s', remote_file, save_path, self.host)
+        self._connect()
+        sftp = self.client.open_sftp()
+        with open(save_path, 'wb') as f:
+            sftp.getfo(remote_file, f)
+        sftp.close()
 
-    def put(self, local_file, remote_path='~/'):
+    def put(self, local_file, remote_path='./'):
         if not os.path.exists(local_file):
-            LOG.error('local %s not exists', local_file)
-            return
+            raise IOError('Error: local file {} not exists'.format(local_file))
         self._connect()
         sftp = self.client.open_sftp()
         try:
             sftp.listdir(remote_path)
-            save_path = '/'.join([remote_path, os.path.basename(local_file)])
+            save_path =  '/'.join([remote_path, os.path.basename(local_file)])
         except IOError:
             save_path = remote_path
-        LOG.info('put %s -> %s', local_file, save_path)
+        LOG.debug('put %s -> %s at %s', local_file, save_path, self.host)
         sftp.put(local_file, save_path)
         sftp.close()
 
 
 def run_cmd_on_host(request):
-    ssh_client = SSHClient(request.host, request.user,
-                           request.password,
-                           port=request.port,
-                            timeout=request.timeout)
+    ssh_client = SSHClient(request.host, request.user, request.password,
+                           port=request.port, timeout=request.timeout)
     return ssh_client.ssh(request.cmd)
 
+
+def download_from_host(request: ScpRequest):
+    ssh_client = SSHClient(request.host, request.user, request.password,
+                           port=request.port, timeout=request.timeout)
+    ssh_client.get(request.remote, request.local)
+
+
+def upload_to_host(request: ScpRequest):
+    ssh_client = SSHClient(request.host, request.user, request.password,
+                           port=request.port, timeout=request.timeout)
+    ssh_client.put(request.local, request.remote)
