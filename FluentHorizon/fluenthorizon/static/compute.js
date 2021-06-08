@@ -61,7 +61,8 @@ var app = new Vue({
         fipQuota: new ChartPieUsed('fipQuota', translate('fip')),
         sgQuota: new ChartPieUsed('sgQuota', translate('sg')),
         usedCpu: 0,
-        usedRam: 0
+        usedRam: 0,
+        usage: {}
     },
     methods: {
         logDebug: function (msg, autoHideDelay = 1000, title = 'Debug') {
@@ -235,6 +236,30 @@ var app = new Vue({
                 }
             }
             return {}
+        },
+        doAction: function(action, params, callback){
+            this.wetoolFS.postAction(
+                {'name': action, params: params},
+                function(status, data){
+                    console.log('do action ' + action )
+                    console.log(status)
+                    console.log(data)
+                    if(status == 200){
+                        callback(data)
+                    }else{
+                        self.logError(`do action ${action} failed.`)
+                    }
+                })
+        },
+        show_usages: function(){
+            var self = this;
+            this.logInfo(`usageStart = ${this.usageStart}, usageEnd = ${this.usageEnd}`);
+            if (this.usageStart == 0 || this.usageEnd == 0){
+                return;
+            }
+            this.doAction('show_usages', {start: this.usageStart, end: this.usageEnd}, function(data){
+                self.usage = data.usage;
+            })
         }
     },
     mounted: function() {
@@ -249,6 +274,11 @@ var app = new Vue({
         this.listResource('flavors');
         this.listResource('servers');
         this.listResource('hypervisors');
+        var self = this;
+        this.doAction('show_usages', {}, function(data){
+            self.usage = data.usage;
+        })
+        // this.listResource('usages');
         var self = this;
 
         self.intervalId = setInterval(function(){

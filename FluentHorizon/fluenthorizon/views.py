@@ -1,3 +1,5 @@
+from datetime import datetime
+from re import I
 import flask
 import json
 
@@ -5,6 +7,7 @@ from flask import views
 from flask import current_app
 from flask import session
 
+from fluentcore import date
 from fluentcore.common import log
 
 from openstack import client
@@ -83,7 +86,8 @@ class ActionView(views.MethodView):
         'list_hypervisors', 'list_servers', 'list_instances',
         'list_images', 'list_flavors', 'list_keypairs',
         'list_quotas',
-        'list_floatingips', 'list_security_groups'
+        'list_floatingips', 'list_security_groups',
+        'show_usages'
     }
 
     def post(self):
@@ -268,9 +272,27 @@ class ActionView(views.MethodView):
         quota = self._make_dict_object(c.get_quota(),
                                        ['instances', 'cores', 'ram',
                                         'floating_ips', 'security_groups',
-                                        'key_pairs']
-                                       )
+                                        'key_pairs'])
         return {'quotas': quota}
+
+    def show_usages(self, **params):
+        import time
+        start, end = None, None
+        if 'start' in params:
+            start_ts = date.parse_str2timestamp(params['start'],
+                                                date_format='%Y-%m-%d')
+            start = datetime.fromtimestamp(start_ts)
+        if 'end' in params:
+            end_ts = date.parse_str2timestamp(params['end'],
+                                              date_format='%Y-%m-%d')
+            end = datetime.fromtimestamp(end_ts)
+        if not start:
+            start = date.datetime_before(days=30)
+        if not end:
+            end = datetime.now()
+        nova = get_client().nova
+        usage = nova.usage.get(session['auth']['projectId'], start, end)
+        return {'usage': usage.to_dict()}
 
 
 class FaviconView(views.MethodView):
@@ -286,8 +308,7 @@ class ServerView(views.MethodView):
         return {'server': {
             'name': 'Openstack',
             'version': '0.1',
-            'username': session.get('auth').get('username')
-        }
+            'username': session.get('auth').get('username')}
         }
 
 

@@ -37,16 +37,16 @@
                 <b-form-datepicker v-model="usageEnd" class="mb-2"></b-form-datepicker>
             </div>
             <div class="col-lg-1 col-sm-3">
-                <button class="btn btn-info">Submit</button>
+                <button class="btn btn-info" v-on:click="show_usages">Submit</button>
             </div>
-            <div class="col-lg-5 col-sm-3">
+            <div class="col-lg-6 col-sm-6">
                 <table class="table table-borderless table-sm " style="width: 100%;">
                     <tbody>
-                        <tr><td><strong>Active Instances</strong>   </td><td>xx</td></tr>
-                        <tr><td><strong>Active RAM</strong></td><td>xx</td></tr>
-                        <tr><td><strong>This Period's VCPU-Hours</strong> </td><td>xx</td></tr>
+                        <tr><td><strong>Active Instances</strong></td><td>{{usage.server_usages.length}}</td></tr>
+                        <tr><td><strong>Active RAM</strong></td><td> xx </td></tr>
+                        <tr><td><strong>This Period's VCPU-Hours</strong> </td><td>{{usage.total_vcpus_usage}}</td></tr>
                         <tr><td><strong>This Period's GB-Hours</strong> </td><td>xx</td></tr>
-                        <tr><td><strong>This Period's RAM-Hours</strong> </td><td>xx</td></tr>
+                        <tr><td><strong>This Period's RAM-Hours</strong> </td><td>{{usage.total_memory_mb_usage}}</td></tr>
                     </tbody>
                 </table>
             </div>

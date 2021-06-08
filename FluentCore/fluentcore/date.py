@@ -1,6 +1,7 @@
 import time
 import pytz
 from datetime import datetime
+from datetime import timedelta
 
 FORMAT_YYYY_MM_DD_HHMMSS = '%Y-%m-%d %H:%M:%S'
 FORMAT_YYYY_MM_DD_HHMMSS_Z = '%Y-%m-%d %H:%M:%S %Z'
@@ -51,3 +52,11 @@ def utc_now() -> datetime:
 
 def utc_now_str(date_format=None) -> float:
     return now_str(tz='utc', date_format=date_format)
+
+
+def datetime_after(start=None, **kwargs):
+    return (start or datetime.now()) + timedelta(**kwargs)
+
+
+def datetime_before(end=None, **kwargs):
+    return (end or datetime.now()) - timedelta(**kwargs)

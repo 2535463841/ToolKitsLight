@@ -30,6 +30,7 @@ class HorizonHttpServer(httpserver.WsgiServer):
         super().__init__('HorizonHttpServer', host=host, port=port,
                          template_folder=os.path.join(ROUTE, 'templates'),
                          static_folder=os.path.join(ROUTE, 'static'))
+        self.app.config['SECRET_KEY'] = 'HorizonHttpServer'
 
     def before_request(self):
         if not session.get('auth'):
