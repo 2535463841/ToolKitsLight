@@ -9,9 +9,11 @@ from fluentcore.common import log
 
 from openstack import client
 
+import conf
+
 LOG = log.getLogger(__name__)
 
-OS_AUTH_URL = 'http://controller:35357/v3'
+CONF = conf.CONF
 
 CLIENTS = {}
 
@@ -37,7 +39,7 @@ def get_client():
         project_domain_name = auth.get('projectDomain', 'Default')
 
         openstackclient = client.OpenstackClient(
-            OS_AUTH_URL,
+            CONF.openstack.auth_url,
             username=username, password=password, project_name=project_name,
             user_domain_name=user_domain_name,
             project_domain_name=project_domain_name,
@@ -305,7 +307,7 @@ class LoginView(views.MethodView):
         user_domain_name = auth.get('userDomain', 'Default')
         project_domain_name = auth.get('projectDomain', 'Default')
         openstackclient = client.OpenstackClient(
-            OS_AUTH_URL,
+            CONF.openstack.auth_url,
             username=username, password=password, project_name=project_name,
             user_domain_name=user_domain_name,
             project_domain_name=project_domain_name,
@@ -316,7 +318,7 @@ class LoginView(views.MethodView):
             session['auth']['userId'] = openstackclient.session.get_user_id()
             session['auth']['projectId'] = \
                 openstackclient.session.get_project_id()
-            session['auth']['authUrl'] = OS_AUTH_URL
+            session['auth']['authUrl'] = CONF.openstack.auth_url
             CLIENTS[username] = openstackclient
             LOG.debug('login user: %s', session.get('auth'))
             return get_json_response({'msg': 'login success'})
