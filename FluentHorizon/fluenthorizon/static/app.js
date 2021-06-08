@@ -372,43 +372,42 @@ var app = new Vue({
         }
     },
     mounted: function() {
-        this.getServerInfo();
-        this.getAuthInfo();
-        this.listResource('services');
-        this.listResource('endpoints');
-        this.listResource('users');
-        this.listResource('projects');
-        this.listResource('keypairs');
-        // this.listResource('floatingips');
-        this.listResource('security_groups');
-        this.listResource('quotas');
-        this.listResource('images');
+        // this.getAuthInfo();
+        // this.listResource('services');
+        // this.listResource('endpoints');
+        // this.listResource('users');
+        // this.listResource('projects');
+        // this.listResource('keypairs');
+        // // this.listResource('floatingips');
+        // this.listResource('security_groups');
+        // this.listResource('quotas');
+        // this.listResource('images');
 
-        this.listResource('flavors');
-        this.listResource('servers');
-        this.listResource('networks');
-        this.listResource('subnets');
-        // this.listResource('routers');
-        this.listResource('ports');
-        this.listResource('hypervisors');
+        // this.listResource('flavors');
+        // this.listResource('servers');
+        // this.listResource('networks');
+        // this.listResource('subnets');
+        // // this.listResource('routers');
+        // this.listResource('ports');
+        // this.listResource('hypervisors');
         var self = this;
 
-        this.instanceQuota.init();
-        this.vcpuQuota.init();
-        this.ramQuota.init();
-        this.fipQuota.init();
-        this.sgQuota.init();
+        // this.instanceQuota.init();
+        // this.vcpuQuota.init();
+        // this.ramQuota.init();
+        // this.fipQuota.init();
+        // this.sgQuota.init();
 
-        self.intervalId = setInterval(function(){
-            // self.listResource('hypervisors');
-            self.listResource('servers');
-            if(self.failedTimes >= 3){
-                self.logError(`list resources failed ${self.failedTimes}, stop ${self.intervalId}`);
-                clearInterval(self.intervalId);
-            }
-        }, 5000);
+        // self.intervalId = setInterval(function(){
+        //     // self.listResource('hypervisors');
+        //     // self.listResource('servers');
+        //     if(self.failedTimes >= 3){
+        //         self.logError(`list resources failed ${self.failedTimes}, stop ${self.intervalId}`);
+        //         clearInterval(self.intervalId);
+        //     }
+        // }, 5000);
 
-        setInterval(function(){self.draw();}, 2000);
+        // setInterval(function(){self.draw();}, 2000);
 
         // Vue.prototype.$echarts = echarts;
     }

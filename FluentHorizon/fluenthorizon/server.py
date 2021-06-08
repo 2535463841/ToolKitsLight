@@ -33,5 +33,6 @@ class HorizonHttpServer(httpserver.WsgiServer):
         self.app.config['SECRET_KEY'] = 'HorizonHttpServer'
 
     def before_request(self):
+        LOG.debug('before request auth is %s', session.get('auth'))
         if not session.get('auth'):
             return flask.redirect('/login')

@@ -62,7 +62,7 @@ var app = new Vue({
         sgQuota: new ChartPieUsed('sgQuota', translate('sg')),
         usedCpu: 0,
         usedRam: 0,
-        usage: {}
+        usage: {server_usages: []}
     },
     methods: {
         logDebug: function (msg, autoHideDelay = 1000, title = 'Debug') {
@@ -251,7 +251,7 @@ var app = new Vue({
                     }
                 })
         },
-        show_usages: function(){
+        showUsages: function(){
             var self = this;
             this.logInfo(`usageStart = ${this.usageStart}, usageEnd = ${this.usageEnd}`);
             if (this.usageStart == 0 || this.usageEnd == 0){
@@ -275,6 +275,7 @@ var app = new Vue({
         this.listResource('servers');
         this.listResource('hypervisors');
         var self = this;
+
         this.doAction('show_usages', {}, function(data){
             self.usage = data.usage;
         })

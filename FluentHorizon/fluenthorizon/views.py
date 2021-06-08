@@ -64,6 +64,8 @@ class HomeView(views.MethodView):
 class HtmlView(views.MethodView):
 
     def get(self, name):
+        if not session.get('auth'):
+            return flask.redirect('/login')
         return flask.render_template('{}.html'.format(name),
                                      **DEFAULT_CONTEXT)
 
