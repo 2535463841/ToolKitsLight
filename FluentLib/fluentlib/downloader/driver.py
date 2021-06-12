@@ -1,7 +1,7 @@
 import abc
 from concurrent import futures
 
-from fluentcore.common import log
+from fluentlib.common import log
 
 LOG = log.getLogger(__name__)
 

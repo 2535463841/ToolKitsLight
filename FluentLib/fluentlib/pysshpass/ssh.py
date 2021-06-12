@@ -1,10 +1,9 @@
-#! /usr/bin/python
-from __future__ import print_function
 import getpass
 import os
+
 import paramiko
 
-from fluentcore.common import log
+from fluentlib.common import log
 
 LOG = log.getLogger(__name__)
 

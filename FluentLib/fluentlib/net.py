@@ -1,10 +1,9 @@
-import socket
 from collections import namedtuple
 from concurrent import futures
+import socket
 
-from fluentcore import executor
-from fluentcore import system
-
+from fluentlib import executor
+from fluentlib import system
 
 ScanResult = namedtuple('ScanResult', 'host port connectable')
 

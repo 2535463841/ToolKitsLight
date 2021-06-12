@@ -1,10 +1,11 @@
+from gevent import pywsgi
 import os
+
 import flask
 
-from fluentcore import net
-from fluentcore.common import log
-from fluentcore.server import views
-from gevent import pywsgi
+from fluentlib import net
+from fluentlibe.common import log
+from fluentlibe.server import views
 
 
 LOG = log.getLogger(__name__)
@@ -12,7 +13,7 @@ ROUTE = os.path.dirname(os.path.abspath(__file__))
 
 
 class WsgiServer:
-    RULES = [(r'/', views.IndexView.as_view('index')),]
+    RULES = [(r'/', views.IndexView.as_view('index')), ]
 
     def __init__(self, name, host=None, port=80, template_folder=None,
                  static_folder=None):

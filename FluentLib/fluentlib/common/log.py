@@ -9,6 +9,7 @@ _DEFAULT_BACKUP_COUNT = None
 
 _LOGGER = set([])
 
+
 def set_default(level=None, filename=None, max_mb=None, backup_count=None):
     global _DEFAULT_LEVEL
     global _DEFAULT_FILE, _DEFAULT_MAX_BYTES, _DEFAULT_BACKUP_COUNT

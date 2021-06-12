@@ -2,10 +2,9 @@ import hashlib
 import io
 import random
 
-import qrcode
-from pyzbar import pyzbar
-
 from PIL import Image
+from pyzbar import pyzbar
+import qrcode
 
 LOWER = 'abcdefghijklmnopqrstuvwxyz'
 UPPER = 'abcdefghijklmnopqrstuvwxyz'.upper()

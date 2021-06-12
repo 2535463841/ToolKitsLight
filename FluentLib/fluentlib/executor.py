@@ -5,7 +5,6 @@ from collections import namedtuple
 
 LOG = logging.getLogger(__name__)
 
-
 ExecuteResult = namedtuple('ExecutorResult', 'status stdout stderr')
 
 

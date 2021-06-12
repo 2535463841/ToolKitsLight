@@ -49,7 +49,7 @@ def directory_flat(top, set_index=True):
             remove(dir_path, recursive=True)
 
 
-def zip_path(path, name=None, zip_root=True):
+def zip_fils(path, name=None, zip_root=True):
     """Compress directory use zipfile libriary
     """
     if not os.path.exists(path):

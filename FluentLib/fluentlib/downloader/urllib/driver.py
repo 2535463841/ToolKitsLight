@@ -1,11 +1,12 @@
 import io
 import os
+import re
 import urllib3
 
 import bs4
-import re
-from fluentcore.common import log
-from fluentcore.downloader import driver
+
+from fluentlib.common import log
+from fluentlib.downloader import driver
 
 LOG = log.getLogger(__name__)
 
