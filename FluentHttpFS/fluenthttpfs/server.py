@@ -1,14 +1,13 @@
-import os
-import flask
-import logging
 import argparse
+import logging
+import os
+import sys
 
-from fluentcore import net
-from fluentcore.common import log
-from fluentcore.server import httpserver
+from fluentlib.common import log
+from fluentlib.server import httpserver
 
-from fluenthttpfs import manager
-from fluenthttpfs import views
+from . import manager
+from . import views
 
 LOG = log.getLogger(__name__)
 ROUTE = os.path.dirname(os.path.abspath(__file__))
@@ -51,4 +50,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

@@ -1,8 +1,6 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
-
-setup(name='fluentclient',
-      version='1.0',
-      description='python fluent client',
-      author='zbw',
-      packages=find_packages())
+setup(
+    setup_requires=['pbr>=2.0.0'],
+    pbr=True
+)

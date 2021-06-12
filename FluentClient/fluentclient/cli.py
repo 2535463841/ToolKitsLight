@@ -10,9 +10,16 @@ LOG = log.getLogger(__name__)
 
 
 def main():
-    importlib.import_module('fluentclient.fluentcore.qrcode')
-    importlib.import_module('fluentclient.fluentcore.sshpass')
-    importlib.import_module('fluentclient.fluentcore.fs')
+    modules = [
+        'fluentclient.fluentcore.fs',
+        'fluentclient.fluentcore.qrcode',
+        'fluentclient.fluentcore.sshpass',
+    ]
+    for module in modules:
+        try:
+            importlib.import_module(module)
+        except Exception as e:
+            LOG.debug('import module failed %s, %s', module, e)
     args = base.SUB_CLI_PARSER.parse_args()
     if not hasattr(args, 'cli'):
         base.SUB_CLI_PARSER.print_usage()

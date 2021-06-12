@@ -59,7 +59,7 @@ do
     fi
     if [[ -f requirements.txt ]]; then
         logInfo "$component install requirements ..."
-        pip3 install -r requirements.txt > /dev/null
+        pip3 install -r requirements.txt
     fi
     logInfo "$component make package ..."
     rm -rf dist

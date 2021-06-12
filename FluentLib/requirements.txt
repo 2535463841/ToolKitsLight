@@ -6,4 +6,3 @@ pillow
 urllib3
 pyzbar
 gevent
-

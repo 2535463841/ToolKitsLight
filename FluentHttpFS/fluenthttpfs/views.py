@@ -30,7 +30,7 @@ def get_json_response(data, status=200):
 class HomeView(views.MethodView):
 
     def get(self):
-        return flask.redirect('/index.html')
+        return flask.redirect('/index.html', **DEFAULT_CONTEXT)
 
 
 class IndexView(views.MethodView):
