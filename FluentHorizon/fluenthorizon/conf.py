@@ -1,5 +1,5 @@
 
-from fluentcore.common import config
+from fluentlib.common import config
 
 CONF = config.ConfigOpts()
 

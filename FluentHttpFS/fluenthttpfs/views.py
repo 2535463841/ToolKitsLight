@@ -7,9 +7,9 @@ from urllib import parse
 from flask import views
 from flask import current_app
 
-from fluentcore.common import log
-from fluentcore import code
-from fluentcore import fs
+from fluentlib.common import log
+from fluentlib import code
+from fluentlib import fs
 
 LOG = log.getLogger(__name__)
 FS_CONTROLLER = None

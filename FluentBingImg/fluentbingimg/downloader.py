@@ -1,13 +1,12 @@
-from fluentcore.common import log
-from fluentcore.downloader.urllib import driver as urllib_driver
-from fluentcore.downloader.wget import driver as wget_driver
+from fluentlib.common import log
+from fluentlib.downloader.urllib import driver as urllib_driver
+from fluentlib.downloader.wget import driver as wget_driver
 
 LOG = log.getLogger(__name__)
 
 SCHEME = 'http'
 HOST = 'www.bingimg.cn'
 FILE_NAME_MAX_SIZE = 50
-
 URL_GET_IMAGES_PAGE = '{scheme}://{host}/list{page}'
 
 

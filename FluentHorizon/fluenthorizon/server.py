@@ -3,8 +3,8 @@ import flask
 
 from flask import session
 
-from fluentcore.common import log
-from fluentcore.server import httpserver
+from fluentlib.common import log
+from fluentlib.server import httpserver
 
 import views
 

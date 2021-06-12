@@ -2,7 +2,7 @@ import argparse
 import logging
 import os
 
-from fluentcore.common import log
+from fluentlib.common import log
 
 import server
 import conf

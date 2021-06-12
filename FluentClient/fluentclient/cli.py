@@ -11,9 +11,9 @@ LOG = log.getLogger(__name__)
 
 def main():
     modules = [
-        'fluentclient.fluentcore.fs',
-        'fluentclient.fluentcore.qrcode',
-        'fluentclient.fluentcore.sshpass',
+        'fluentclient.commands.fs',
+        'fluentclient.commands.qrcode',
+        'fluentclient.commands.sshpass',
     ]
     for module in modules:
         try:

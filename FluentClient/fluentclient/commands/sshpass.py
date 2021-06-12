@@ -131,8 +131,7 @@ def upload_to_host(scp_request):
 @show_results
 def run_cmd_on_hosts(cmd_requests, worker=None):
     worker = worker or len(cmd_requests)
-    LOG.info('run cmd on %s hosts, worker is %s',
-                len(cmd_requests), worker)
+    LOG.info('run cmd on %s hosts, worker is %s', len(cmd_requests), worker)
     results = []
     pbar = None
     if is_support_tqdm():
@@ -165,11 +164,11 @@ def download_from_hosts(scp_requests, worker=None):
                 pbar.update(1)
     if pbar:
         pbar.close()
+    return results
 
 
 @show_results
 def upload_to_hosts(scp_requests, worker=None):
-    upload_to_host()
     worker = worker or len(scp_requests)
     LOG.info('upload to %s hosts, worker is %s', len(scp_requests), worker)
     results = []
@@ -233,8 +232,13 @@ class ScpGet(cliparser.CliBase):
 
     def __call__(self, args):
         requests = []
-        for user, host, _, opts in get_connect_info(args):
-            req = ssh.CmdRequest(args.command, host,
+        for user, host, remote_path, opts in get_connect_info(args):
+            remote = remote_path or args.remote
+            if not remote:
+                LOG.error('remote_path is not set for host: %s', host)
+                return 1
+            local_path = os.path.join(args.local, host)
+            req = ssh.ScpRequest(local_path, args.remote, host,
                                  user=user or args.user,
                                  password=opts.get('password', args.password),
                                  port=opts.get('port', args.port),

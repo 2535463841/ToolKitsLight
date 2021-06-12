@@ -1,9 +1,8 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 
-setup(name='fluentbingimg',
-      version='1.0',
-      description='Image Downloader Bing',
-      author='zbw',
-      include_package_data=True,
-      packages=find_packages())
+setup(
+    setup_requires=['pbr>=2.0.0'],
+    pbr=True
+)
+

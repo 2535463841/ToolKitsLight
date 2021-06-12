@@ -11,10 +11,10 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 
-from fluentcore import code
-from fluentcore import date
-from fluentcore import location
-from fluentcore import system
+from fluentlib import code
+from fluentlib import date
+from fluentlib import location
+from fluentlib import system
 
 from ui import style
 

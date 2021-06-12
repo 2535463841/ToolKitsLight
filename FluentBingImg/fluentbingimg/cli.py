@@ -1,16 +1,30 @@
-import logging
 import argparse
+import logging
+import sys
 
-from fluentcore.common import cliparser
-from fluentcore.common import log
+from fluentlib.common import log
+from fluentlib.system import os
+
+from fluentlib.common import cliparser
+from fluentlib.common import log
+
+from . import downloader
+
+LOG = log.getLogger(__name__)
 
 UHD_CHOICES = ['only', 'include', 'no']
+RESOLUTION_UHD = 'uhd'
+RESOLUTION_1920 = '1920x1080'
+UHD_CHOICES = ['only', 'include', 'no']
+UHD_RESOLUTION_MAPPING = {'include': None,
+                          'no': RESOLUTION_1920,
+                          'only': RESOLUTION_UHD}
 
 arguments = [
+    cliparser.Argument('page', type=int,
+                       help='download page begin with'),
     cliparser.Argument('-d', '--debug', action='store_true',
                        help='show debug message'),
-    cliparser.Argument('-s', '--start', type=int, default=1,
-                       help='start page, default is 1'),
     cliparser.Argument('-e', '--end', type=int,
                        help='end page, default is None'),
     cliparser.Argument('-u', '--uhd', default='only', choices=UHD_CHOICES,
@@ -27,10 +41,34 @@ arguments = [
     cliparser.Argument('--wget', action='store_true', help='use wget'),
 ]
 
-parser = argparse.ArgumentParser()
-for argument in arguments:
-    parser.add_argument(*argument.args, **argument.kwargs)
 
-args = parser.parse_args()
-if args.debug:
-    log.set_default(level=logging.DEBUG)
+def main():
+    parser = argparse.ArgumentParser()
+    for argument in arguments:
+        parser.add_argument(*argument.args, **argument.kwargs)
+
+    args = parser.parse_args()
+    if args.debug:
+        log.set_default(level=logging.DEBUG)
+
+    if args.wget and os.is_windows():
+        LOG.error('wget is not support in windows')
+        return 1
+
+    if args.end and args.end < args.page:
+        LOG.error('invalid value, end page can not lower than start page.')
+        return 1
+
+    driver = downloader.BingImagDownloader()
+    for page in range(args.page, (args.end or args.page) + 1):
+        driver.download(page,
+                        resolution=UHD_RESOLUTION_MAPPING[args.uhd],
+                        progress=not args.no_progress,
+                        download_dir=args.dir,
+                        workers=args.workers,
+                        timeout=args.timeout,
+                        use_wget=args.wget)
+
+
+if __name__ == '__main__':
+    sys.exit(main())

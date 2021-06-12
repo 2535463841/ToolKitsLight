@@ -7,8 +7,8 @@ from flask import views
 from flask import current_app
 from flask import session
 
-from fluentcore import date
-from fluentcore.common import log
+from fluentlib import date
+from fluentlib.common import log
 
 from openstack import client
 

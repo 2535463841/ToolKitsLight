@@ -7,6 +7,11 @@ function logError(){
     echo `date +'%F %T'` "ERROR:" $@
 }
 
+function cleanUp(){
+    rm -rf ./build  ./dist ./*.egg-info
+    rm -rf AUTHORS ChangeLog
+}
+
 COMPONENT=$1
 if [[ -z "${COMPONENT}" ]]; then
     install_computents=(FluentLib FluentClient FluentHttpFS FluentBingImg)
@@ -72,6 +77,7 @@ do
     else
         logError "$component install failed"
     fi
-
+    logInfo "$component clean up ..."
+    cleanUp
     cd ../
 done
