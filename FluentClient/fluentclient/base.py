@@ -1,4 +1,4 @@
-from fluentcore.common import cliparser
+from fluentlib.common import cliparser
 
 SUB_CLI_PARSER = cliparser.get_sub_cli_parser('fluent client commands')
 

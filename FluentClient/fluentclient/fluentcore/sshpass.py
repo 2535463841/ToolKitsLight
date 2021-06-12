@@ -5,9 +5,9 @@ import paramiko
 import time
 from concurrent import futures
 
-from fluentcore.common import cliparser
-from fluentcore.common import log
-from fluentcore.pysshpass import ssh
+from fluentlib.common import cliparser
+from fluentlib.common import log
+from fluentlib.pysshpass import ssh
 
 from fluentclient import base
 
