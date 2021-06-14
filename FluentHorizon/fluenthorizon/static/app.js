@@ -57,7 +57,7 @@ var app = new Vue({
             floatingips: [], security_groups: []
         },
         usage: {
-            memory: {used: 0, total: 0},
+            memory: {used: 0, total: 0}, server_usages: []
         },
         auth: {},
         instanceQuota: new ChartPieUsed('instancesQuota', translate('instances')),
@@ -392,23 +392,5 @@ var app = new Vue({
         // this.listResource('hypervisors');
         var self = this;
 
-        // this.instanceQuota.init();
-        // this.vcpuQuota.init();
-        // this.ramQuota.init();
-        // this.fipQuota.init();
-        // this.sgQuota.init();
-
-        // self.intervalId = setInterval(function(){
-        //     // self.listResource('hypervisors');
-        //     // self.listResource('servers');
-        //     if(self.failedTimes >= 3){
-        //         self.logError(`list resources failed ${self.failedTimes}, stop ${self.intervalId}`);
-        //         clearInterval(self.intervalId);
-        //     }
-        // }, 5000);
-
-        // setInterval(function(){self.draw();}, 2000);
-
-        // Vue.prototype.$echarts = echarts;
     }
 });

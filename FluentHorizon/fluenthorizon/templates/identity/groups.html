@@ -1,14 +1,14 @@
 <b-button-toolbar aria-label="Toolbar with button groups and input groups" class="float-right mb-2">
     <b-button-group size="sm" class="mr-1">
-        <b-form-select size='sm' :value="0" :options="[{text: 'ProjectName =', value: 0}, {text: 'Project ID =', value: 1}]" ></b-form-select>
+        <b-form-select size='sm' :value="0" :options="[{text: 'GroupName =', value: 0}, {text: 'GroupID =', value: 1}]" ></b-form-select>
         <b-form-input value="" size="sm"></b-form-input>
         <button type="button" class="btn btn-outline-secondary btn-sm">{{translate('filter')}}</button>
     </b-button-group>
     <b-button-group size="sm" class="mr-1">
-        <button type="button" class="btn btn-outline-secondary"><b-icon icon="plus"></b-icon>{{translate('createProject')}}</button>
+        <button type="button" class="btn btn-outline-secondary"><b-icon icon="plus"></b-icon>{{translate('createGroup')}}</button>
     </b-button-group>
-    <b-button-group size="sm" class="mr-2">
-        <b-button class="btn-danger"><b-icon icon="trash-fill"></b-icon>{{translate('deleteProjects')}}</b-button>
+    <b-button-group size="sm" class="mr-1">
+        <b-button class="btn-danger"><b-icon icon="trash-fill"></b-icon>{{translate('deleteGroups')}}</b-button>
     </b-button-group>
     <b-button-group size="sm" class="mt-1">
         <b-form-checkbox v-model="checked" name="check-button" switch>{{translate('enabled')}}
@@ -19,27 +19,21 @@
     <thead class="table-light">
         <tr>
             <th>{{translate('name')}} </th>
-            <th>{{translate('description')}}</th>
+            <th>{{translate('description')}} </th>
             <th>{{translate('id')}}</th>
-            <th>{{translate('domainName')}}</th>
-            <th>{{translate('enabled')}}</th>
             <th>{{translate('operation')}}</th>
         </tr>
     </thead>
     <tbody>
-        <tr v-for="(item, index) in resources.projects" v-model="resources.projects">
+        <tr v-for="(item, index) in resources.groups" v-model="resources.groups">
             <td><a href="#" v-on:click="getUser(item)">{{item.name}}</a></td>
             <td>{{item.description}}</td>
             <td>{{item.id}}</td>
-            <td>{{item.domain_name}}</td>
-            <td>{{item.enabled}}</td>
             <td>
                 <b-dropdown split id="dropdown-1" :text="translate('manageMembers')" size='sm' split-variant="outline-secondary" variant="secondary">
-                    <b-dropdown-item>{{translate('modifyGroups')}}</b-dropdown-item>
-                    <b-dropdown-item>{{translate('editProject')}}</b-dropdown-item>
-                    <b-dropdown-item>{{translate('viewUsage')}}</b-dropdown-item>
-                    <b-dropdown-item>{{translate('modifyQuotas')}}</b-dropdown-item>
-                    <b-dropdown-item variant="danger">{{translate('deleteProject')}}</b-dropdown-item>
+                    <b-dropdown-item>{{translate('editGroup')}}</b-dropdown-item>
+                    <b-dropdown-item>{{translate('deleteGroup')}}</b-dropdown-item>
+                    <b-dropdown-item variant="danger">{{translate('deleteGroup')}}</b-dropdown-item>
                 </b-dropdown>
             </td>
         </tr>

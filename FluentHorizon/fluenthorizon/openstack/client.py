@@ -8,6 +8,8 @@ from neutronclient.v2_0 import client as neutrnoclient
 from novaclient import client as novaclient
 import glanceclient
 
+from cinderclient.v3 import client as cinderclient
+
 
 class OpenstackClient(object):
     """openstack clients
@@ -25,6 +27,7 @@ class OpenstackClient(object):
         self.neutron = neutrnoclient.Client(session=self.session)
         self.nova = novaclient.Client('2.0', session=self.session)
         self.glance = glanceclient.Client('2', session=self.session)
+        self.cinder = cinderclient.Client(session=self.session)
 
     @classmethod
     def create_instance(cls, *kwargs):

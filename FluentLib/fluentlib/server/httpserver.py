@@ -4,8 +4,8 @@ import os
 import flask
 
 from fluentlib import net
-from fluentlibe.common import log
-from fluentlibe.server import views
+from fluentlib.common import log
+from fluentlib.server import views
 
 
 LOG = log.getLogger(__name__)

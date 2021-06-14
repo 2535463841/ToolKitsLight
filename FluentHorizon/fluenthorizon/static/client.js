@@ -62,26 +62,13 @@ class WetoolFS {
                 xhr.send(JSON.stringify({ action: body }));
             }
         };
-        this.getServerInfo = function(onload_callback, onerror_callback = null){
-            var xhr = new XMLHttpRequest();
-            xhr.onload = function () {
-                var data = JSON.parse(xhr.responseText);
-                onload_callback(xhr.status, data);
-            };
-            xhr.onerror = function () {
-                if (onerror_callback != null) {
-                    onerror_callback();
-                }
-            };
-            xhr.open("GET", '/server', true);
-            xhr.send();
+        this.listResource = function(resource_name, onload_callback, onerror_callback= null){
+            this.wetoolFS.postAction({'name': `list_${resource_name}`}, onload_callback, onerror_callback)
         };
-
     }
 }
 
 function delItemsAfter(array, afterIndex){
-    // Delete array items after <afterIndex>
     while(array.length > afterIndex +1){
         array.pop();
     }
@@ -159,6 +146,45 @@ class ChartPieUsed {
                 dataList.push({value: value, name: key});
             }
             this.setData(dataList);
+        }
+    }
+}
+
+class LOGGER {
+    constructor(bvToast) {
+        this.bvToast = bvToast;
+
+        this.debug = function (msg, autoHideDelay = 1000, title = 'Debug') {
+            if (this.debug == false) {
+                return
+            }
+            this.bvToast.toast(msg, {
+                title: title,
+                variant: 'default',
+                autoHideDelay: autoHideDelay
+            });
+        },
+
+        this.info  = function (msg, autoHideDelay = 1000, title = 'Info') {
+            this.bvToast.toast(msg, {
+                title: title,
+                variant: 'success',
+                autoHideDelay: autoHideDelay
+            });
+        },
+        this.warn = function (msg, autoHideDelay = 1000, title = 'Warn') {
+            this.bvToast.toast(msg, {
+                title: title,
+                variant: 'warning',
+                autoHideDelay: autoHideDelay
+            });
+        },
+        this.error = function (msg, autoHideDelay = 5000, level = 'Error') {
+            this.bvToast.toast(msg, {
+                title: level,
+                variant: 'danger',
+                autoHideDelay: autoHideDelay
+            });
         }
     }
 }

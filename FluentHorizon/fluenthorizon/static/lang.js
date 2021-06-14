@@ -86,6 +86,8 @@ var DIRECOTRY = {
     overreview: {en: 'overreview', zh: '概览'},
     hypervisors: {en: 'hypervisors', zh: '虚拟化'},
     limitSumary: {en: 'Limit Sumary', zh: '配额摘要'},
+    deleteKeyPair: {en: 'Delete Key Pair', zh: '删除密钥对'},
+    deleteKeyPairs: {en: 'Delete Key Pairs', zh: '删除密钥对'},
 
 };
 var SUPPORT_LANG = ['en', 'zh'];

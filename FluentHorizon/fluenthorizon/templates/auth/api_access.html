@@ -1,0 +1,27 @@
+
+<b-button-toolbar aria-label="Toolbar with button groups and input groups" class="float-right mb-2">
+    <b-button-group size="sm" class="mr-1">
+        <button type="button" class="btn btn-info"><b-icon icon="eye-fill"></b-icon>{{translate('viewCredentials')}}</button>
+    </b-button-group>
+    <b-button-group size="sm" class="mr-1">
+        <button type="button" class="btn btn-sm btn-outline-secondary">{{translate('downloadOpenstackRcFile')}}</button>
+    </b-button-group>
+</b-button-toolbar>
+
+
+<table class="table table-hover table-sm table-striped" style="width: 100%;">
+    <thead class="table-light">
+        <tr>
+            <th>{{translate('service')}}</th>
+            <th>{{translate('serviceEndpoint')}} </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr v-for="(item, index) in resources.services" v-model="resources.services">
+            <td>{{item.name}}</td>
+            <td>{{getPublicEndpoint(item.id).url}}</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- {{resources}} -->

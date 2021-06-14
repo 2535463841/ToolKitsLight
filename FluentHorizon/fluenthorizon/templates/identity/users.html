@@ -1,31 +1,47 @@
-<!-- <div>
-<b-card no-body>
-    <b-tabs pills card vertical>
-    <b-tab :title="translate('identity')" active>
-        <b-card-text>
-            
-        </b-card-text>
-    </b-tab>
-    <b-tab :title="translate('identity')"><b-card-text>Tab contents 2</b-card-text></b-tab>
-    <b-tab :title="translate('identity')"><b-card-text>Tab contents 3</b-card-text></b-tab>
-    </b-tabs>
-</b-card>
-</div> -->
-    
+<b-button-toolbar aria-label="Toolbar with button groups and input groups" class="float-right mb-2">
+    <b-button-group size="sm" class="mr-1">
+        <b-form-select size='sm' :value="0" :options="[{text: 'UserName =', value: 0}, {text: 'UserID =', value: 1}]" ></b-form-select>
+        <b-form-input value="" size="sm"></b-form-input>
+        <button type="button" class="btn btn-outline-secondary btn-sm">{{translate('filter')}}</button>
+    </b-button-group>
+    <b-button-group size="sm" class="mr-1">
+        <button type="button" class="btn btn-outline-secondary"><b-icon icon="plus"></b-icon>{{translate('createUser')}}</button>
+    </b-button-group>
+    <b-button-group size="sm" class="mr-1">
+        <b-button class="btn-danger"><b-icon icon="trash-fill"></b-icon>{{translate('deleteUsers')}}</b-button>
+    </b-button-group>
+    <b-button-group size="sm" class="mt-1">
+        <b-form-checkbox v-model="checked" name="check-button" switch>{{translate('enabled')}}
+    </b-button-group>
+</b-button-toolbar>
+
 <table class="table table-hover table-sm " style="width: 100%;">
     <thead class="table-light">
         <tr>
-            <th>{{translate('id')}}</th>
             <th>{{translate('name')}} </th>
+            <th>{{translate('description')}} </th>
+            <th>{{translate('email')}} </th>
+            <th>{{translate('id')}}</th>
             <th>{{translate('enabled')}}</th>
+            <th>{{translate('domainName')}}</th>
             <th>{{translate('operation')}}</th>
         </tr>
     </thead>
     <tbody>
         <tr v-for="(item, index) in resources.users" v-model="resources.users">
-            <td>{{item.id}}</td>
             <td><a href="#" v-on:click="getUser(item)">{{item.name}}</a></td>
+            <td>{{item.description}}</td>
+            <td>{{item.email}}</td>
+            <td>{{item.id}}</td>
             <td>{{item.enabled}}</td>
+            <td>{{item.domain_name}}</td>
+            <td>
+                <b-dropdown split id="dropdown-1" :text="translate('edit')" size='sm' split-variant="outline-secondary" variant="secondary">
+                    <b-dropdown-item>{{translate('changePassword')}}</b-dropdown-item>
+                    <b-dropdown-item>{{translate('disableUser')}}</b-dropdown-item>
+                    <b-dropdown-item variant="danger">{{translate('deleteUser')}}</b-dropdown-item>
+                </b-dropdown>
+            </td>
         </tr>
     </tbody>
 </table>

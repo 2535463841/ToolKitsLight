@@ -20,6 +20,7 @@ CONF = conf.CONF
 
 CLIENTS = {}
 
+_CACHE_DOMAINS = {}
 _CACHE_IMAGES = {}
 _CACHE_FLAVORS = {}
 _CACHE_PROJECTS = {}
@@ -73,7 +74,7 @@ class HtmlView(views.MethodView):
 class IndexView(views.MethodView):
 
     def get(self):
-        return flask.render_template('index.html', **DEFAULT_CONTEXT)
+        return flask.render_template('compute.html', **DEFAULT_CONTEXT)
 
 
 class ActionView(views.MethodView):
@@ -82,14 +83,14 @@ class ActionView(views.MethodView):
         'get_auth_info',
         'get_endpoint',
         'list_services', 'list_endpoints',
-        'list_users', 'list_projects',
+        'list_users', 'list_projects', 'list_groups', 'list_roles',
         'list_routers', 'list_networks', 'list_subnets', 'list_ports',
         'list_agents',
         'list_hypervisors', 'list_servers', 'list_instances',
         'list_images', 'list_flavors', 'list_keypairs',
         'list_quotas',
         'list_floatingips', 'list_security_groups',
-        'show_usages'
+        'show_usages',
     }
 
     def post(self):
@@ -139,20 +140,42 @@ class ActionView(views.MethodView):
         return {'endpoints': items}
 
     def list_projects(self, **params):
+        if not _CACHE_DOMAINS:
+            self.list_domains()
         items = []
-        columns = ['id', 'enabled', 'name']
+        columns = ['id', 'enabled', 'name', 'description', 'domain_id']
         user_id = session.get('auth').get('userId')
-        for item in get_client().keystone.projects.list(user=user_id):
-            items.append(
-                {k: getattr(item, k) for k in columns}
-            )
+        for item in get_client().keystone.projects.list():
+            item_dict = self._make_dict_object(item, columns)
+            if item.domain_id in _CACHE_DOMAINS:
+                item_dict['domain_name'] = _CACHE_DOMAINS[item.domain_id].name
+            else:
+                item_dict['domain_name'] = ''
+            items.append(item_dict)
+        LOG.debug('projects %s', items)
         return {'projects': items}
 
+    def list_domains(self):
+        if not _CACHE_DOMAINS:
+            domains = get_client().keystone.domains.list()
+            for domain in domains:
+                _CACHE_DOMAINS[domain.id] = domain
+        items = self._make_dict_list(_CACHE_DOMAINS.values(),
+                                     ['id', 'name', 'enabled', 'description'])
+        return items
+
     def list_users(self, **params):
+        if not _CACHE_DOMAINS:
+            self.list_domains()
         items = []
-        columns = ['id', 'enabled', 'name']
+        columns = ['id', 'enabled', 'name', 'description', 'domain_id']
         for item in get_client().keystone.users.list():
-            items.append({k: getattr(item, k) for k in columns})
+            item_dict = self._make_dict_object(item, columns)
+            if item.domain_id in _CACHE_DOMAINS:
+                item_dict['domain_name'] = _CACHE_DOMAINS[item.domain_id].name
+            else:
+                item_dict['domain_name'] = ''
+            items.append(item_dict)
         return {'users': items}
 
     def list_networks(self, **params):
@@ -189,7 +212,7 @@ class ActionView(views.MethodView):
     def _make_dict_object(self, obj, keys):
         item = {}
         for key in keys:
-            item[key] = getattr(obj, key)
+            item[key] = getattr(obj, key, '')
         return item
 
     def list_hypervisors(self, **params):
@@ -295,6 +318,18 @@ class ActionView(views.MethodView):
         nova = get_client().nova
         usage = nova.usage.get(session['auth']['projectId'], start, end)
         return {'usage': usage.to_dict()}
+
+    def list_groups(self):
+        keystone = get_client().keystone
+        return {'groups': self._make_dict_list(
+            keystone.groups.list(), ['id', 'name', 'description'])
+        }
+
+    def list_roles(self):
+        keystone = get_client().keystone
+        return {'roles': self._make_dict_list(
+            keystone.roles.list(), ['id', 'name'])
+        }
 
 
 class FaviconView(views.MethodView):

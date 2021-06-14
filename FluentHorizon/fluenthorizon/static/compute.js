@@ -241,9 +241,6 @@ var app = new Vue({
             this.wetoolFS.postAction(
                 {'name': action, params: params},
                 function(status, data){
-                    console.log('do action ' + action )
-                    console.log(status)
-                    console.log(data)
                     if(status == 200){
                         callback(data)
                     }else{
