@@ -33,7 +33,7 @@ def md5sum_file(file_path, read_bytes=None):
     return (md5sum.hexdigest(), sha1.hexdigest())
 
 
-def convert_base(src_number, src_base: int, target_base=10):
+def convert_base(src_number, src_base, target_base=10):
     """
     >>> convert_base('10', 10, target_base=2)
     '1010'

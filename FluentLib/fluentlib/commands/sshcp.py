@@ -9,7 +9,7 @@ from fluentlib.common import cliparser
 from fluentlib.common import log
 from fluentlib.pysshpass import ssh
 
-from fluentclient import base
+from . import base
 
 LOG = log.getLogger(__name__)
 
@@ -188,7 +188,7 @@ def upload_to_hosts(scp_requests, worker=None):
 
 @cliparser.register_cli(base.SUB_CLI_PARSER)
 class SSHCmd(cliparser.CliBase):
-    NAME = 'ssh-cmd'
+    NAME = 'run'
     ARGUMENTS = [
         cliparser.Argument('host',
                            help='The host to connect, string or file. '
@@ -221,7 +221,7 @@ def get_connect_info(args):
 
 @cliparser.register_cli(base.SUB_CLI_PARSER)
 class ScpGet(cliparser.CliBase):
-    NAME = 'scp-get'
+    NAME = 'get'
     ARGUMENTS = [
         cliparser.Argument('host',
                            help='The remote host to connect, string or file'),
@@ -249,7 +249,7 @@ class ScpGet(cliparser.CliBase):
 
 @cliparser.register_cli(base.SUB_CLI_PARSER)
 class ScpPut(cliparser.CliBase):
-    NAME = 'scp-put'
+    NAME = 'put'
     ARGUMENTS = [
         cliparser.Argument('local', help='The local path to put.'),
         cliparser.Argument('host',

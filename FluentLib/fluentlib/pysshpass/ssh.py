@@ -111,13 +111,13 @@ def run_cmd_on_host(request):
     return ssh_client.ssh(request.cmd)
 
 
-def download_from_host(request: ScpRequest):
+def download_from_host(request):
     ssh_client = SSHClient(request.host, request.user, request.password,
                            port=request.port, timeout=request.timeout)
     ssh_client.get(request.remote, request.local)
 
 
-def upload_to_host(request: ScpRequest):
+def upload_to_host(request):
     ssh_client = SSHClient(request.host, request.user, request.password,
                            port=request.port, timeout=request.timeout)
     ssh_client.put(request.local, request.remote)

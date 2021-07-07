@@ -3,7 +3,7 @@ import argparse
 
 class Argument:
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
 
@@ -18,7 +18,7 @@ class CliBase:
 
 class SubCliParser:
 
-    def __init__(self, title) -> None:
+    def __init__(self, title):
         self.parser = argparse.ArgumentParser()
         self.sub_parser = self.parser.add_subparsers(title=title)
 

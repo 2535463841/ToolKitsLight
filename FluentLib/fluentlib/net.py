@@ -39,9 +39,9 @@ def port_scan(host, port_start=0, port_end=65535, threads=1, callback=None):
 
 def ping(host):
     if system.os.is_linux():
-        result = executor.LinuxExecutor.execute(['ping', '-w', '3'])
+        result = executor.LinuxExecutor.execute(['ping', '-w', '3', host])
     else:
-        result = executor.LinuxExecutor.execute(['ping', '-n', '3'])
+        result = executor.LinuxExecutor.execute(['ping', '-n', '3', host])
     return result.status == 0
 
 

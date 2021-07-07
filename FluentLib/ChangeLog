@@ -1,0 +1,71 @@
+CHANGES
+=======
+
+* update fluentlib
+* udpate fluentHorizon
+* update 1. update fluentbingimg 2. update install.sh 3. update fluenthorizon
+* update
+* Add uitls file-read-backwards
+* rename fluentcore to fluentlib
+* update fluenthorizon
+* udpate fluenthorizon
+* update fluentcore, fluenthorizon
+* update fluentclient
+* update fluentclient
+* update fluentclient sshpass
+* Support ssh-cmd with file include multi hosts
+* update
+* update
+* update fluentbingimg cli
+* update fluentbingimg cli
+* fix bug
+* update 1. overwrite.html chartPie
+* udpate
+* update
+* update
+* update
+* update
+* update
+* update
+* add logger
+* Delete fluentHttpFS directory
+* modiry case
+* Revert "rename"
+* Update README.md
+* rename
+* rename
+* change import model name
+* rename fluenthttpfs
+* rename fluenthttpfs
+* rename to fluentcore fluenthttpfs
+* rename fluentHttpFS
+* wehttpfs 1.0
+* update
+* Update README.md
+* Update README.md
+* init weHttpFS
+* updage httpfs ui
+* add function rename
+* update
+* use bootstrap vue
+* update
+* update hetool to wetool
+* rename
+* update
+* Update
+* 添加 工具 httpfs 1. 查看文件路径 2. 下载（支持二维码扫描）
+* 重构
+* qrcode 转化为字符串格式
+* add net tools
+* 获取系统信息
+* rename
+* rename
+* 添加: 日期格式化工具
+* Update bingimg.py
+* Create \_\_init\_\_.py
+* Create downloader.py
+* rename & add tool: bingimg dowloader
+* Update README.md
+* add tool: base conve add  qss
+* init
+* Initial commit

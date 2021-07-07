@@ -1,10 +1,11 @@
+from __future__ import print_function
 import time
 
 from fluentlib.common import cliparser
 from fluentlib.common import log
 from fluentlib import fs
 
-from fluentclient import base
+from . import base
 
 LOG = log.getLogger(__name__)
 

@@ -2,7 +2,7 @@ from fluentlib import code
 from fluentlib.common import cliparser
 from fluentlib.common import log
 
-from fluentclient import base
+from . import base
 
 LOG = log.getLogger(__name__)
 

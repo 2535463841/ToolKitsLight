@@ -3,23 +3,20 @@ import logging
 import sys
 
 from fluentlib.common import log
-
-from . import base
+from fluentlib.commands import base
 
 LOG = log.getLogger(__name__)
 
 
 def main():
-    modules = [
-        'fluentclient.commands.fs',
-        'fluentclient.commands.qrcode',
-        'fluentclient.commands.sshpass',
-    ]
+    modules = ['fluentlib.commands.fs',
+               'fluentlib.commands.qrcode',
+               ]
     for module in modules:
         try:
             importlib.import_module(module)
         except Exception as e:
-            LOG.debug('import module failed %s, %s', module, e)
+            LOG.warn('import module failed %s, %s', module, e)
     args = base.SUB_CLI_PARSER.parse_args()
     if not hasattr(args, 'cli'):
         base.SUB_CLI_PARSER.print_usage()

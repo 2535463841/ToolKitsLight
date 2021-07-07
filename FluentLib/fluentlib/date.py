@@ -7,7 +7,7 @@ FORMAT_YYYY_MM_DD_HHMMSS = '%Y-%m-%d %H:%M:%S'
 FORMAT_YYYY_MM_DD_HHMMSS_Z = '%Y-%m-%d %H:%M:%S %Z'
 
 
-def parse_timestamp2str(timestamp: float, date_format=None):
+def parse_timestamp2str(timestamp, date_format=None):
     """Parse timestamp to string with DATE_FORMAT
     >>> parse_timestamp2str(0.0)
     '1970-01-01 08:00:00'
@@ -33,7 +33,9 @@ parse_ts2str = parse_timestamp2str
 parse_str2ts = parse_str2timestamp
 
 
-def now(tz=None) -> datetime:
+def now(tz=None):
+    """return type: datetime
+    """
     timezone = pytz.timezone(tz) if tz else None
     return datetime.now(tz=timezone)
 
@@ -46,11 +48,13 @@ def now_str(tz=None, date_format=None):
         return date_now.strftime(date_format)
 
 
-def utc_now() -> datetime:
+def utc_now():
+    """return type: datetime
+    """
     return datetime.utcnow(tz='utc')
 
 
-def utc_now_str(date_format=None) -> float:
+def utc_now_str(date_format=None):
     return now_str(tz='utc', date_format=date_format)
 
 

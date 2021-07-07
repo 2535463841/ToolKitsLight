@@ -14,7 +14,7 @@ function cleanUp(){
 
 COMPONENT=$1
 if [[ -z "${COMPONENT}" ]]; then
-    install_computents=(FluentLib FluentClient FluentHttpFS FluentBingImg)
+    install_computents=(FluentLib FluentHttpFS FluentBingImg)
 else
     install_computents=($1)
 fi
