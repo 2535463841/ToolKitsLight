@@ -4,7 +4,7 @@ import io
 import os
 import zipfile
 
-from fluentlib.common import log
+from icoding.common import log
 
 LOG = log.getLogger(__name__)
 
@@ -98,7 +98,7 @@ def find(path, pattern):
     return matched_pathes
 
 
-class FileBackwardsReader:
+class FileBackwardsReader(object):
     NEW_LINES = ['\r\n', '\n', '\r']
 
     def __init__(self, fp, file_size=None, chunk_size=None):

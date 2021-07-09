@@ -2,7 +2,7 @@ import json
 import ssl
 import http.client as httplib
 
-from fluentlib.common import log
+from icoding.common import log
 
 LOG = log.getLogger(__name__)
 

@@ -3,9 +3,9 @@ import os
 
 import flask
 
-from fluentlib import net
-from fluentlib.common import log
-from fluentlib.server import views
+from icoding import net
+from icoding.common import log
+from icoding.server import views
 
 
 LOG = log.getLogger(__name__)

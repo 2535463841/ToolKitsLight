@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* move fluentclient to fluentlib
 * update fluentlib
 * udpate fluentHorizon
 * update 1. update fluentbingimg 2. update install.sh 3. update fluenthorizon

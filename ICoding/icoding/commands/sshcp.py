@@ -5,18 +5,18 @@ import paramiko
 import time
 from concurrent import futures
 
-from fluentlib.common import cliparser
-from fluentlib.common import log
-from fluentlib.pysshpass import ssh
+from icoding.common import cliparser
+from icoding.common import log
+from icoding.pysshpass import ssh
 
 from . import base
 
 LOG = log.getLogger(__name__)
 
 RE_CONNECTION = re.compile(r'((.*)@){0,1}([^:]+)(:(.*)){0,1}')
-BASE_SSH_ARGUMENTS = base.BASE_ARGUMENTS + [
-    cliparser.Argument('-T', '--get_pty',
-                       action='store_true', help='if set, use pty'),
+BASE_SSH_ARGUMENTS = [
+    cliparser.Argument('-T', '--get_pty', action='store_true',
+                       help='if set, use pty'),
     cliparser.Argument('-t', '--timeout', type=int,
                        help='Timeout of ssh, default is {}'.format(
                            ssh.DEFAULT_TIMEOUT)),

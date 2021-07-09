@@ -55,7 +55,3 @@ class JsonObject(object):
 
 def loads(json_str):
     return JsonObject(json.loads(json_str))
-
-
-a = loads('{"a": 1}')
-print(repr(a))

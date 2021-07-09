@@ -3,7 +3,7 @@ import os
 
 import paramiko
 
-from fluentlib.common import log
+from icoding.common import log
 
 LOG = log.getLogger(__name__)
 

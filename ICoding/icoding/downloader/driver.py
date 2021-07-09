@@ -1,7 +1,7 @@
 import abc
 from concurrent import futures
 
-from fluentlib.common import log
+from icoding.common import log
 
 LOG = log.getLogger(__name__)
 

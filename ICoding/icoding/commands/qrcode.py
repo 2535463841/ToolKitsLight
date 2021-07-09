@@ -1,6 +1,6 @@
-from fluentlib import code
-from fluentlib.common import cliparser
-from fluentlib.common import log
+from icoding import code
+from icoding.common import cliparser
+from icoding.common import log
 
 from . import base
 
@@ -12,7 +12,7 @@ DEFAULT_BORDER = 0
 @cliparser.register_cli(base.SUB_CLI_PARSER)
 class QrcodeParse(cliparser.CliBase):
     NAME = 'qrcode-parse'
-    ARGUMENTS = base.BASE_ARGUMENTS + [
+    ARGUMENTS = [
         cliparser.Argument('string', help='the string to create qrcode'),
         cliparser.Argument('-b', '--border', type=int, default=DEFAULT_BORDER,
                            help='the border of qrcode, deafult is {}'.format(
@@ -35,7 +35,7 @@ class QrcodeParse(cliparser.CliBase):
 @cliparser.register_cli(base.SUB_CLI_PARSER)
 class QrcodeDump(cliparser.CliBase):
     NAME = 'qrcode-dump'
-    ARGUMENTS = base.BASE_ARGUMENTS + [
+    ARGUMENTS = [
         cliparser.Argument('filename', help='the image file of qrcode'),
     ]
 

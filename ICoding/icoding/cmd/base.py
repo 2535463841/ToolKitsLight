@@ -2,23 +2,22 @@ import importlib
 import logging
 import sys
 
-from fluentlib.common import log
-
-from fluentlib.commands import base
+from icoding.common import cliparser
+from icoding.common import log
+from icoding.commands import fs
+from icoding.commands import qrcode
 
 LOG = log.getLogger(__name__)
 
 
 def main():
-    modules = ['fluentlib.commands.sshcp']
-    for module in modules:
-        try:
-            importlib.import_module(module)
-        except Exception as e:
-            LOG.warn('import module failed %s, %s', module, e)
-    args = base.SUB_CLI_PARSER.parse_args()
+    cli_parser =  cliparser.SubCliParser('Some Simple utils')
+    for cls in [fs.PyTac, qrcode.QrcodeParse, qrcode.QrcodeDump]:
+        cli_parser.register_cli(cls)
+    args = cli_parser.parse_args()
+
     if not hasattr(args, 'cli'):
-        base.SUB_CLI_PARSER.print_usage()
+        cli_parser.print_usage()
         return 1
 
     if args.debug:

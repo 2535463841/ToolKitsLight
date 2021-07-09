@@ -5,8 +5,8 @@ import urllib3
 
 import bs4
 
-from fluentlib.common import log
-from fluentlib.downloader import driver
+from icoding.common import log
+from icoding.downloader import driver
 
 LOG = log.getLogger(__name__)
 

@@ -13,6 +13,7 @@ def set_country(country):
 
 
 def get_country():
+    """use module pytz to get country"""
     global _COUNTRY
     assert _COUNTRY is not None
     return pytz.country_names.get(_COUNTRY)

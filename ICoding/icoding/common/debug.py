@@ -1,7 +1,8 @@
 import os
 import time
 import logging
-from fluentlib.common import log
+
+from icoding.common import log
 
 FORMAT = '%(asctime)s %(levelname)s %(message)s'
 

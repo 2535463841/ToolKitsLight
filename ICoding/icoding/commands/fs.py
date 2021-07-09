@@ -1,19 +1,18 @@
 from __future__ import print_function
 import time
 
-from fluentlib.common import cliparser
-from fluentlib.common import log
-from fluentlib import fs
+from icoding.common import cliparser
+from icoding.common import log
+from icoding import fs
 
 from . import base
 
 LOG = log.getLogger(__name__)
 
 
-@cliparser.register_cli(base.SUB_CLI_PARSER)
-class PrintBackwards(cliparser.CliBase):
-    NAME = 'print-backwards'
-    ARGUMENTS = base.BASE_ARGUMENTS + [
+class PyTac(cliparser.CliBase):
+    NAME = 'py-tac'
+    ARGUMENTS = [
         cliparser.Argument('file', help='file'),
         cliparser.Argument('-c', '--chunk', type=int, default=None,
                            help='The chunk size to read, default is None'),
