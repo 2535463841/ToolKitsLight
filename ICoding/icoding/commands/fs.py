@@ -5,8 +5,6 @@ from icoding.common import cliparser
 from icoding.common import log
 from icoding import fs
 
-from . import base
-
 LOG = log.getLogger(__name__)
 
 

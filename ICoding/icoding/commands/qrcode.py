@@ -2,14 +2,11 @@ from icoding import code
 from icoding.common import cliparser
 from icoding.common import log
 
-from . import base
-
 LOG = log.getLogger(__name__)
 
 DEFAULT_BORDER = 0
 
 
-@cliparser.register_cli(base.SUB_CLI_PARSER)
 class QrcodeParse(cliparser.CliBase):
     NAME = 'qrcode-parse'
     ARGUMENTS = [
@@ -32,7 +29,6 @@ class QrcodeParse(cliparser.CliBase):
                 print(line)
 
 
-@cliparser.register_cli(base.SUB_CLI_PARSER)
 class QrcodeDump(cliparser.CliBase):
     NAME = 'qrcode-dump'
     ARGUMENTS = [

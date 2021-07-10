@@ -5,6 +5,7 @@ import os
 import zipfile
 
 from icoding.common import log
+from icoding import system
 
 LOG = log.getLogger(__name__)
 
@@ -96,6 +97,16 @@ def find(path, pattern):
         for f in fnmatch.filter(dirs + files, pattern):
             matched_pathes.append((root, f))
     return matched_pathes
+
+
+def make_file(file_path):
+    """Create specified file, make dirs if path is not exists."""
+    if os.path.exists(file_path):
+        return
+    file_dir = os.path.dirname(file_path)
+    if not os.path.exists(file_dir):
+        os.makedirs(file_dir)
+    open(file_path, 'a').close()
 
 
 class FileBackwardsReader(object):

@@ -9,8 +9,6 @@ from icoding.common import cliparser
 from icoding.common import log
 from icoding.pysshpass import ssh
 
-from . import base
-
 LOG = log.getLogger(__name__)
 
 RE_CONNECTION = re.compile(r'((.*)@){0,1}([^:]+)(:(.*)){0,1}')
@@ -186,7 +184,6 @@ def upload_to_hosts(scp_requests, worker=None):
     return results
 
 
-@cliparser.register_cli(base.SUB_CLI_PARSER)
 class SSHCmd(cliparser.CliBase):
     NAME = 'run'
     ARGUMENTS = [
@@ -219,7 +216,6 @@ def get_connect_info(args):
     return connect_info
 
 
-@cliparser.register_cli(base.SUB_CLI_PARSER)
 class ScpGet(cliparser.CliBase):
     NAME = 'get'
     ARGUMENTS = [
@@ -247,7 +243,6 @@ class ScpGet(cliparser.CliBase):
         download_from_hosts(requests, worker=args.worker)
 
 
-@cliparser.register_cli(base.SUB_CLI_PARSER)
 class ScpPut(cliparser.CliBase):
     NAME = 'put'
     ARGUMENTS = [

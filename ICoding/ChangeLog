@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* rename FluentLib to ICoding
 * move fluentclient to fluentlib
 * update fluentlib
 * udpate fluentHorizon

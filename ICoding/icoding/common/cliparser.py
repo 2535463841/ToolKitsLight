@@ -8,7 +8,8 @@ class Argument(object):
 
 
 class CliBase(object):
-    NAME = ''
+    """Add class property NAME to set subcommaon name
+    """
     BASE_ARGUMENTS = [
         Argument('-d', '--debug', action='store_true',
                 help='show debug messages')
@@ -36,7 +37,8 @@ class SubCliParser(object):
         """params cls: CliBase type"""
         if not issubclass(cls, CliBase):
             raise ValueError('unknown type {}'.format(type(cls)))
-        cli_parser = self.sub_parser.add_parser(cls.NAME)
+        name = cls.NAME if hasattr(cls, 'NAME') else cls.__name__
+        cli_parser = self.sub_parser.add_parser(name)
         for argument in cls.arguments():
             cli_parser.add_argument(*argument.args, **argument.kwargs)
         cli_parser.set_defaults(cli=cls)

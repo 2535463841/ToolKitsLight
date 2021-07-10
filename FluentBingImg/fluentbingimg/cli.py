@@ -3,7 +3,7 @@ import logging
 import sys
 
 from fluentlib.common import log
-from fluentlib.system import os
+from fluentlib import system
 
 from fluentlib.common import cliparser
 from fluentlib.common import log
@@ -51,7 +51,7 @@ def main():
     if args.debug:
         log.set_default(level=logging.DEBUG)
 
-    if args.wget and os.is_windows():
+    if args.wget and system.OS.is_windows():
         LOG.error('wget is not support in windows')
         return 1
 
