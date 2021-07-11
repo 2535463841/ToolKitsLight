@@ -4,7 +4,6 @@ import re
 import urllib3
 
 import bs4
-
 from icoding.common import log
 from icoding.downloader import driver
 

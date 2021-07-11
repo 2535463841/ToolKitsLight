@@ -1,10 +1,17 @@
 import hashlib
 import io
 import random
+import os
 
 from PIL import Image
 from pyzbar import pyzbar
 import qrcode
+
+is_support_tqdm = True
+try:
+    from tqdm import tqdm
+except ImportError:
+    is_support_tqdm = False
 
 LOWER = 'abcdefghijklmnopqrstuvwxyz'
 UPPER = 'abcdefghijklmnopqrstuvwxyz'.upper()
@@ -12,11 +19,11 @@ NUMBER = '0123456789'
 SPECIAL = '!@#$%^&*,.;:'
 
 
-def md5sum_file(file_path, read_bytes=None):
+def md5sum_file(file_path, read_bytes=None, sha1=False, progress=False):
     """Calculate the md5 and sha1 values of the file
-    Return: md3sum, sha1
+    Return: md5sum, sha1
     """
-    read_bytes or io.DEFAULT_BUFFER_SIZE
+    read_bytes = read_bytes or io.DEFAULT_BUFFER_SIZE
     sha1 = hashlib.sha1()
     md5sum = hashlib.md5()
 
@@ -26,10 +33,19 @@ def md5sum_file(file_path, read_bytes=None):
             yield data
             data = fo.read(read_bytes)
 
+    pbar = None
     with open(file_path, 'rb') as f:
+        file_size = os.fstat(f.fileno()).st_size
+        if progress and is_support_tqdm:
+            pbar = tqdm(total=file_size)
         for data in read_from_fo(f):
             md5sum.update(data)
-            sha1.update(data)
+            if sha1:
+                sha1.update(data)
+            if pbar:
+                pbar.update(read_bytes)
+    if pbar:
+        pbar.close()
     return (md5sum.hexdigest(), sha1.hexdigest())
 
 

@@ -1,4 +1,3 @@
-import importlib
 import logging
 import sys
 
@@ -10,7 +9,7 @@ LOG = log.getLogger(__name__)
 
 
 def main():
-    cli_parser =  cliparser.SubCliParser('SSH & SCP utils')
+    cli_parser = cliparser.SubCliParser('python SSH & SCP utils')
     for cls in [sshcp.SSHCmd, sshcp.ScpGet, sshcp.ScpPut]:
         cli_parser.register_cli(cls)
 

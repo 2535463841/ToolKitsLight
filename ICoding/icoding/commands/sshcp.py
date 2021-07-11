@@ -33,7 +33,7 @@ BASE_SSH_ARGUMENTS = [
 
 def is_support_tqdm():
     try:
-        import tqdm
+        import tqdm                    # noqa
         return True
     except ImportError:
         LOG.warning('tqdm is not installed')
@@ -42,7 +42,7 @@ def is_support_tqdm():
 
 def parse_connect_info(connect_info):
     """
-    Param: 
+    Param:
         connection_info: e.g. root@localhost:/tmp
     Return:
         user, host, remote_path: e.g. root, localhost, /tmp
@@ -51,7 +51,7 @@ def parse_connect_info(connect_info):
     # NOTE: Example 'root@localhost:/tmp' will be parsed as
     # ('root@', 'root', 'localhost', ':/tmp', '/tmp')
     LOG.debug('regex match user=%s, host=%s, remote_path=%s',
-            matched.group(2), matched.group(3), matched.group(5))
+              matched.group(2), matched.group(3), matched.group(5))
     return matched.group(2), matched.group(3), matched.group(5)
 
 

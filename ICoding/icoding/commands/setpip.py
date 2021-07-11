@@ -1,4 +1,3 @@
-import os
 import configparser
 try:
     import urlparse                       # noqa

@@ -5,7 +5,6 @@ import os
 import zipfile
 
 from icoding.common import log
-from icoding import system
 
 LOG = log.getLogger(__name__)
 
@@ -186,7 +185,8 @@ def open_backwards(file, chunk_size=None, **kwargs):
     >>> reader = FileBackwardsReader(fp, file_size=len(fp.getvalue()))
     >>> reader.readlines()
     ['ccc\\n', 'bbb\\n', 'aaa\\n']
-    >>> reader = FileBackwardsReader(fp, file_size=len(fp.getvalue()), chunk_size=1)
+    >>> file_size = len(fp.getvalue())
+    >>> reader = FileBackwardsReader(fp, file_size=file_size, chunk_size=1)
     >>> reader.readlines()
     ['ccc\\n', 'bbb\\n', 'aaa\\n']
     """

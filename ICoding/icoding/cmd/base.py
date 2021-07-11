@@ -1,4 +1,3 @@
-import importlib
 import logging
 import sys
 
@@ -7,14 +6,15 @@ from icoding.common import log
 from icoding.commands import fs
 from icoding.commands import qrcode
 from icoding.commands import setpip
+from icoding.commands import code
 
 LOG = log.getLogger(__name__)
 
 
 def main():
-    cli_parser =  cliparser.SubCliParser('Some Simple utils')
+    cli_parser = cliparser.SubCliParser('Some Simple utils')
     for cls in [fs.PyTac, qrcode.QrcodeParse, qrcode.QrcodeDump,
-                setpip.SetPip]:
+                setpip.SetPip, code.JsonGet, code.Md5Sum]:
         cli_parser.register_cli(cls)
     args = cli_parser.parse_args()
 

@@ -2,7 +2,6 @@ import getpass
 import os
 
 import paramiko
-
 from icoding.common import log
 
 LOG = log.getLogger(__name__)
@@ -97,7 +96,7 @@ class SSHClient(object):
         sftp = self.client.open_sftp()
         try:
             sftp.listdir(remote_path)
-            save_path =  '/'.join([remote_path, os.path.basename(local_file)])
+            save_path = '/'.join([remote_path, os.path.basename(local_file)])
         except IOError:
             save_path = remote_path
         LOG.debug('put %s -> %s at %s', local_file, save_path, self.host)

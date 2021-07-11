@@ -4,7 +4,6 @@ from concurrent import futures
 from icoding.common import log
 
 LOG = log.getLogger(__name__)
-
 DEFAULT_WORKERS = 10
 
 

@@ -12,7 +12,7 @@ class CliBase(object):
     """
     BASE_ARGUMENTS = [
         Argument('-d', '--debug', action='store_true',
-                help='show debug messages')
+                 help='show debug messages')
     ]
     ARGUMENTS = []
 

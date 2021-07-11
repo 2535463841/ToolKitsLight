@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* add set-pip to set popular pip source
 * rename FluentLib to ICoding
 * move fluentclient to fluentlib
 * update fluentlib
