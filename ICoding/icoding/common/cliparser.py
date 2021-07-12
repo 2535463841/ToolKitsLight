@@ -1,4 +1,11 @@
+import sys
 import argparse
+import logging
+
+from icoding.common import log
+
+LOG = log.getLogger(__name__)
+
 
 class Argument(object):
 
@@ -12,7 +19,7 @@ class CliBase(object):
     """
     BASE_ARGUMENTS = [
         Argument('-d', '--debug', action='store_true',
-                 help='show debug messages')
+                help='show debug messages')
     ]
     ARGUMENTS = []
 
@@ -29,9 +36,26 @@ class SubCliParser(object):
     def __init__(self, title):
         self.parser = argparse.ArgumentParser()
         self.sub_parser = self.parser.add_subparsers(title=title)
+        self._args = None
 
     def parse_args(self):
-        return self.parser.parse_args()
+        self._args = self.parser.parse_args()
+        if not hasattr(self._args, 'cli'):
+            self.print_usage()
+            sys.exit(1)
+        if hasattr(self._args, 'debug') and self._args.debug:
+            log.set_default(level=logging.DEBUG)
+        LOG.debug('args is %s', self._args)
+        return self._args
+
+    def call(self):
+        if not self._args:
+            self.parse_args()
+        return self._args.cli()(self._args)
+
+    def register_clis(self, *args):
+        for arg in args:
+            self.register_cli(arg)
 
     def register_cli(self, cls):
         """params cls: CliBase type"""

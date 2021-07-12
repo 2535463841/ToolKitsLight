@@ -1,8 +1,5 @@
-import configparser
-try:
-    import urlparse                       # noqa
-except ImportError:
-    from urllib import parse as urlparse
+from six.moves import configparser
+from six.moves import urllib_parse
 
 from icoding.common import cliparser
 from icoding.common import log
@@ -50,7 +47,7 @@ class SetPip(cliparser.CliBase):
             index_url = KNOWN_INDEX_URL.get(args.index_url)
         else:
             index_url = args.index_url
-        url = urlparse.urlsplit(index_url)
+        url = urllib_parse.urlsplit(index_url)
         if not args.force and(not url.scheme or not url.netloc):
             LOG.warn('%s is not a valid url, please check or use -f '
                      'to set force', index_url)

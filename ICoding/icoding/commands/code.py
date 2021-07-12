@@ -9,6 +9,7 @@ from icoding.common import cliparser
 from icoding.common import log
 from icoding.common import jsonobj
 from icoding import code as code_function
+from icoding.common import progressbar
 
 LOG = log.getLogger(__name__)
 
@@ -33,7 +34,7 @@ class Md5Sum(cliparser.CliBase):
 
     def __call__(self, args):
         progress = not args.silence
-        if progress and not code_function.is_support_tqdm:
+        if progress and not progressbar.is_support_tqdm:
             LOG.warn('module tpdm is not installed, set progress False')
             progress = False
         if not os.path.exists(args.file):

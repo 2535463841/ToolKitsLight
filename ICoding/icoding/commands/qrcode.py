@@ -1,4 +1,4 @@
-from icoding import code
+from icoding import qrcode
 from icoding.common import cliparser
 from icoding.common import log
 
@@ -8,7 +8,7 @@ DEFAULT_BORDER = 0
 
 
 class QrcodeParse(cliparser.CliBase):
-    NAME = 'qrcode-parse'
+    NAME = 'parse'
     ARGUMENTS = [
         cliparser.Argument('string', help='the string to create qrcode'),
         cliparser.Argument('-b', '--border', type=int, default=DEFAULT_BORDER,
@@ -20,7 +20,7 @@ class QrcodeParse(cliparser.CliBase):
 
     def __call__(self, args):
         border = args.border
-        qr = code.QRCodeExtend(border=border)
+        qr = qrcode.QRCodeExtend(border=border)
         qr.add_data(args.string)
         if args.output:
             qr.save(args.output)
@@ -30,12 +30,12 @@ class QrcodeParse(cliparser.CliBase):
 
 
 class QrcodeDump(cliparser.CliBase):
-    NAME = 'qrcode-dump'
+    NAME = 'dump'
     ARGUMENTS = [
         cliparser.Argument('filename', help='the image file of qrcode'),
     ]
 
     def __call__(self, args):
-        text_lines = code.QRCodeExtend.dump(args.filename)
+        text_lines = qrcode.QRCodeExtend.dump(args.filename)
         for line in text_lines:
             print(line)

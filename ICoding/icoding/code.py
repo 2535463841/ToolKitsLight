@@ -3,20 +3,16 @@ import io
 import random
 import os
 
-from PIL import Image
-from pyzbar import pyzbar
-import qrcode
-
-is_support_tqdm = True
-try:
-    from tqdm import tqdm
-except ImportError:
-    is_support_tqdm = False
+from icoding.common import progressbar
 
 LOWER = 'abcdefghijklmnopqrstuvwxyz'
 UPPER = 'abcdefghijklmnopqrstuvwxyz'.upper()
 NUMBER = '0123456789'
 SPECIAL = '!@#$%^&*,.;:'
+CHAR_MAP = {'lower': LOWER,
+            'upper': UPPER,
+            'number': NUMBER,
+            'special': SPECIAL}
 
 
 def md5sum_file(file_path, read_bytes=None, sha1=False, progress=False):
@@ -33,18 +29,16 @@ def md5sum_file(file_path, read_bytes=None, sha1=False, progress=False):
             yield data
             data = fo.read(read_bytes)
 
-    pbar = None
     with open(file_path, 'rb') as f:
         file_size = os.fstat(f.fileno()).st_size
-        if progress and is_support_tqdm:
-            pbar = tqdm(total=file_size)
+        pbar = progressbar.factory(file_size) if progress \
+            else progressbar.ProgressWithNull(file_size)
+
         for data in read_from_fo(f):
             md5sum.update(data)
             if sha1:
                 sha1.update(data)
-            if pbar:
-                pbar.update(read_bytes)
-    if pbar:
+            pbar.update(read_bytes)
         pbar.close()
     return (md5sum.hexdigest(), sha1.hexdigest())
 
@@ -81,61 +75,10 @@ def convert_base(src_number, src_base, target_base=10):
         return target_num
 
 
-class QRCodeExtend(qrcode.QRCode):
-    """
-    >>> code = QRCodeExtend()
-    >>> code.add_data('http://www.baidu.com')
-    >>> lines = code.parse_string_lines()
-    """
-    char_map = {
-        True: {True: '█', False: '▀'},
-        False: {True: '▄', False: ' '}
-    }
-
-    def parse_string_lines(self):
-        """parse qrcode to string lines
-        """
-        matrix = self.get_matrix()
-        rows = len(matrix)
-        columns = len(matrix[0])
-        if rows / 2 != 0:
-            matrix.append([False] * columns)
-
-        def get_char(x, y):
-            x_next = x + 1
-            return self.char_map.get(matrix[x][y]).get(matrix[x_next][y])
-        lines = []
-        for line in range(0, rows, 2):
-            lines.append(''.join([get_char(line, i) for i in range(columns)]))
-        return lines
-
-    def parse_image_buffer(self):
-        """parse qrcode to BytesIO buffer
-        """
-        buffer = io.BytesIO()
-        self.make_image().save(buffer)
-        return buffer
-
-    def save(self, output):
-        img = self.make_image()
-        img.save(output)
-
-    @classmethod
-    def dump(cls, filename):
-        img = Image.open(filename)
-        return [
-            txt.data.decode("utf-8") for txt in pyzbar.decode(img)
-        ]
-
-
 def random_password(lower=4, upper=4, number=4, special=4):
     kwargs = locals()
-    char_map = {'lower': LOWER,
-                'upper': UPPER,
-                'number': NUMBER,
-                'special': SPECIAL}
     password = []
     for char_type, char_num in kwargs.items():
-        password += random.sample(char_map[char_type], char_num)
+        password += random.sample([char_type], char_num)
     random.shuffle(password)
     return ''.join(password)

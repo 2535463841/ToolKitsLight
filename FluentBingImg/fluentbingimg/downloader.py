@@ -1,6 +1,6 @@
-from fluentlib.common import log
-from fluentlib.downloader.urllib import driver as urllib_driver
-from fluentlib.downloader.wget import driver as wget_driver
+from icoding.common import log
+from icoding.downloader.urllib import driver as urllib_driver
+from icoding.downloader.wget import driver as wget_driver
 
 LOG = log.getLogger(__name__)
 

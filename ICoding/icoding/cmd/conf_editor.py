@@ -1,16 +1,15 @@
-import logging
 import sys
 
 from icoding.common import cliparser
 from icoding.common import log
-from icoding.commands import sshcp
+from icoding.commands import confeditor
 
 LOG = log.getLogger(__name__)
 
 
 def main():
-    cli_parser = cliparser.SubCliParser('python SSH & SCP utils')
-    cli_parser.register_clis(sshcp.SSHCmd, sshcp.ScpGet, sshcp.ScpPut)
+    cli_parser = cliparser.SubCliParser('Some Simple utils')
+    cli_parser.register_clis(confeditor.ConfigList)
     try:
         cli_parser.call()
         return 0

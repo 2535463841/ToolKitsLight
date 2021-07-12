@@ -1,7 +1,10 @@
+import collections
 import os
 import platform
-import psutil
-import collections
+try:
+    import psutil
+except ImportError:
+    pass
 
 cpu_count = collections.namedtuple('cpu_count', 'phy_core v_core')
 

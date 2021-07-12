@@ -5,6 +5,7 @@ import urllib3
 
 import bs4
 from icoding.common import log
+from icoding.common import progressbar
 from icoding.downloader import driver
 
 LOG = log.getLogger(__name__)
@@ -58,26 +59,19 @@ class Urllib3Driver(driver.DownloadDriver):
         super().download_urls(url_list)
 
     def download(self, url):
-        pbar = None
         file_name = os.path.basename(url)
         resp = self.http.request('GET', url, preload_content=False)
         if self.progress:
-            try:
-                from tqdm import tqdm
-                pbar = tqdm(
-                    total=int(resp.headers.get('Content-Length')))
-                desc_template = '{{:{}}}'.format(self.filename_length)
-                pbar.set_description(desc_template.format(file_name))
-            except Exception as e:
-                LOG.warning('load tqdm failed, %s', e)
+            pbar = progressbar.factory(int(resp.headers.get('Content-Length')))
+            desc_template = '{{:{}}}'.format(self.filename_length)
+            pbar.set_description(desc_template.format(file_name))
+        else:
+            pbar = progressbar.ProgressWithNull()
 
         save_path = os.path.join(self.download_dir, file_name)
         with open(save_path, 'wb') as f:
             for data in resp.stream(io.DEFAULT_BUFFER_SIZE):
                 f.write(data)
-                if pbar:
-                    pbar.update(len(data))
-
-        if pbar:
-            pbar.close()
+                pbar.update(len(data))
+        pbar.close()
         return file_name
